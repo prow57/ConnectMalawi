@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../data/services/auth_service.dart';
+import '../../constants/app_constants.dart';
+import '../../utilities/api_response.dart';
+import '../services/auth_service.dart';
 
-class AuthProvider with ChangeNotifier {
+class AuthProvider extends ChangeNotifier {
   final AuthService _authService;
   final FlutterSecureStorage _secureStorage;
   bool _isLoading = false;
   String? _error;
+  String? _token;
 
   AuthProvider({
     required AuthService authService,
@@ -16,146 +19,143 @@ class AuthProvider with ChangeNotifier {
 
   bool get isLoading => _isLoading;
   String? get error => _error;
+  String? get token => _token;
+  bool get isAuthenticated => _token != null;
 
-  Future<void> login(String identifier, String password, {bool useBiometric = false}) async {
-    try {
-      _isLoading = true;
-      _error = null;
-      notifyListeners();
+  Future<void> login({
+    required String identifier,
+    required String password,
+    bool isPhone = false,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
 
-      final token = await _authService.login(identifier, password);
-      await _secureStorage.write(key: 'auth_token', value: token);
-      
-      if (useBiometric) {
-        await _secureStorage.write(key: 'use_biometric', value: 'true');
-      }
+    final response = await _authService.login(
+      identifier: identifier,
+      password: password,
+      isPhone: isPhone,
+    );
 
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _isLoading = false;
-      _error = e.toString();
-      notifyListeners();
-      rethrow;
+    _isLoading = false;
+    if (response.hasError) {
+      _error = response.message;
+    } else {
+      _token = response.data;
+      await _secureStorage.write(
+          key: AppConstants.storageTokenKey, value: _token);
     }
+    notifyListeners();
   }
 
-  Future<void> register(String name, String identifier, String password) async {
-    try {
-      _isLoading = true;
-      _error = null;
-      notifyListeners();
+  Future<void> register({
+    required String name,
+    required String identifier,
+    required String password,
+    bool isPhone = false,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
 
-      final token = await _authService.register(name, identifier, password);
-      await _secureStorage.write(key: 'auth_token', value: token);
-      
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _isLoading = false;
-      _error = e.toString();
-      notifyListeners();
-      rethrow;
+    final response = await _authService.register(
+      name: name,
+      identifier: identifier,
+      password: password,
+      isPhone: isPhone,
+    );
+
+    _isLoading = false;
+    if (response.hasError) {
+      _error = response.message;
     }
+    notifyListeners();
   }
 
-  Future<void> sendOTP(String identifier) async {
-    try {
-      _isLoading = true;
-      _error = null;
-      notifyListeners();
+  Future<void> sendOTP({
+    required String identifier,
+    bool isPhone = false,
+    bool isPasswordReset = false,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
 
-      await _authService.sendOTP(identifier);
-      
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _isLoading = false;
-      _error = e.toString();
-      notifyListeners();
-      rethrow;
+    final response = await _authService.sendOTP(
+      identifier: identifier,
+      isPhone: isPhone,
+      isPasswordReset: isPasswordReset,
+    );
+
+    _isLoading = false;
+    if (response.hasError) {
+      _error = response.message;
     }
+    notifyListeners();
   }
 
-  Future<void> verifyRegistrationOTP(String identifier, String otp) async {
-    try {
-      _isLoading = true;
-      _error = null;
-      notifyListeners();
+  Future<void> verifyOTP({
+    required String identifier,
+    required String otp,
+    bool isPhone = false,
+    bool isPasswordReset = false,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
 
-      await _authService.verifyRegistrationOTP(identifier, otp);
-      
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _isLoading = false;
-      _error = e.toString();
-      notifyListeners();
-      rethrow;
+    final response = await _authService.verifyOTP(
+      identifier: identifier,
+      otp: otp,
+      isPhone: isPhone,
+      isPasswordReset: isPasswordReset,
+    );
+
+    _isLoading = false;
+    if (response.hasError) {
+      _error = response.message;
     }
+    notifyListeners();
   }
 
-  Future<void> verifyPasswordResetOTP(String identifier, String otp) async {
-    try {
-      _isLoading = true;
-      _error = null;
-      notifyListeners();
+  Future<void> resetPassword({
+    required String identifier,
+    required String otp,
+    required String newPassword,
+    bool isPhone = false,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
 
-      await _authService.verifyPasswordResetOTP(identifier, otp);
-      
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _isLoading = false;
-      _error = e.toString();
-      notifyListeners();
-      rethrow;
+    final response = await _authService.resetPassword(
+      identifier: identifier,
+      otp: otp,
+      newPassword: newPassword,
+      isPhone: isPhone,
+    );
+
+    _isLoading = false;
+    if (response.hasError) {
+      _error = response.message;
     }
-  }
-
-  Future<void> resetPassword(String identifier, String otp, String newPassword) async {
-    try {
-      _isLoading = true;
-      _error = null;
-      notifyListeners();
-
-      await _authService.resetPassword(identifier, otp, newPassword);
-      
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _isLoading = false;
-      _error = e.toString();
-      notifyListeners();
-      rethrow;
-    }
+    notifyListeners();
   }
 
   Future<void> logout() async {
-    try {
-      _isLoading = true;
-      _error = null;
-      notifyListeners();
-
-      await _secureStorage.delete(key: 'auth_token');
-      
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _isLoading = false;
-      _error = e.toString();
-      notifyListeners();
-      rethrow;
-    }
+    _token = null;
+    await _secureStorage.delete(key: AppConstants.storageTokenKey);
+    notifyListeners();
   }
 
-  Future<bool> isAuthenticated() async {
-    final token = await _secureStorage.read(key: 'auth_token');
-    return token != null;
+  Future<void> checkAuthStatus() async {
+    _token = await _secureStorage.read(key: AppConstants.storageTokenKey);
+    notifyListeners();
   }
 
-  Future<bool> shouldUseBiometric() async {
-    final useBiometric = await _secureStorage.read(key: 'use_biometric');
-    return useBiometric == 'true';
+  @override
+  void dispose() {
+    _authService.dispose();
+    super.dispose();
   }
 }
