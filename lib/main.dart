@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'feature_auth/presentation/screens/welcome_screen.dart';
-import 'feature_auth/presentation/screens/onboarding_screen.dart';
-import 'feature_auth/presentation/screens/login_screen.dart';
-import 'feature_auth/presentation/screens/register_screen.dart';
-import 'feature_auth/presentation/screens/otp_verification_screen.dart';
-import 'feature_auth/presentation/screens/forgot_password_screen.dart';
-import 'feature_auth/presentation/screens/reset_password_screen.dart';
-import 'feature_auth/presentation/screens/home_dashboard_screen.dart';
-import 'feature_auth/presentation/providers/auth_provider.dart';
-import 'feature_auth/data/services/auth_service.dart';
+import 'constants/app_constants.dart';
+import 'constants/theme_constants.dart';
+import 'feature_auth/screens/welcome_screen.dart';
+import 'feature_auth/screens/onboarding_screen.dart';
+import 'feature_auth/screens/login_screen.dart';
+import 'feature_auth/screens/register_screen.dart';
+import 'feature_auth/screens/otp_verification_screen.dart';
+import 'feature_auth/screens/forgot_password_screen.dart';
+import 'feature_auth/screens/reset_password_screen.dart';
+import 'feature_dashboard/screens/home_dashboard_screen.dart';
+import 'feature_auth/providers/auth_provider.dart';
+import 'feature_auth/services/auth_service.dart';
 
 void main() {
   runApp(const MyApp());
@@ -28,37 +30,47 @@ class MyApp extends StatelessWidget {
         ),
         Provider<AuthService>(
           create: (_) => AuthService(
-            baseUrl: 'https://api.nyasasend.com', // Replace with your API URL
+            baseUrl: AppConstants.apiBaseUrl,
           ),
         ),
-        ChangeNotifierProxyProvider2<AuthService, FlutterSecureStorage,
-            AuthProvider>(
+        ChangeNotifierProxyProvider2<AuthService, FlutterSecureStorage, AuthProvider>(
           create: (context) => AuthProvider(
             authService: context.read<AuthService>(),
             secureStorage: context.read<FlutterSecureStorage>(),
           ),
-          update: (context, authService, secureStorage, previous) =>
-              AuthProvider(
+          update: (context, authService, secureStorage, previous) => AuthProvider(
             authService: authService,
             secureStorage: secureStorage,
           ),
         ),
       ],
       child: MaterialApp(
-        title: 'Nyasa Send',
+        title: AppConstants.appName,
         theme: ThemeData(
-          primarySwatch: Colors.blue,
+          primaryColor: ThemeConstants.primaryColor,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: ThemeConstants.primaryColor,
+            primary: ThemeConstants.primaryColor,
+            secondary: ThemeConstants.secondaryColor,
+          ),
+          scaffoldBackgroundColor: ThemeConstants.backgroundColor,
           useMaterial3: true,
+          textTheme: const TextTheme(
+            displayLarge: ThemeConstants.heading1,
+            displayMedium: ThemeConstants.heading2,
+            displaySmall: ThemeConstants.heading3,
+            bodyLarge: ThemeConstants.body1,
+            bodyMedium: ThemeConstants.body2,
+          ),
         ),
-        initialRoute: '/welcome',
+        initialRoute: AppConstants.routeWelcome,
         routes: {
-          '/welcome': (context) => const WelcomeScreen(),
-          '/onboarding': (context) => const OnboardingScreen(),
-          '/login': (context) => const LoginScreen(),
-          '/register': (context) => const RegisterScreen(),
-          '/verify-otp': (context) {
-            final args = ModalRoute.of(context)!.settings.arguments
-                as Map<String, dynamic>;
+          AppConstants.routeWelcome: (context) => const WelcomeScreen(),
+          AppConstants.routeOnboarding: (context) => const OnboardingScreen(),
+          AppConstants.routeLogin: (context) => const LoginScreen(),
+          AppConstants.routeRegister: (context) => const RegisterScreen(),
+          AppConstants.routeVerifyOTP: (context) {
+            final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
             return OTPVerificationScreen(
               name: args['name'] ?? '',
               phone: args['phone'],
@@ -67,17 +79,16 @@ class MyApp extends StatelessWidget {
               isPasswordReset: args['isPasswordReset'] ?? false,
             );
           },
-          '/forgot-password': (context) => const ForgotPasswordScreen(),
-          '/reset-password': (context) {
-            final args = ModalRoute.of(context)!.settings.arguments
-                as Map<String, dynamic>;
+          AppConstants.routeForgotPassword: (context) => const ForgotPasswordScreen(),
+          AppConstants.routeResetPassword: (context) {
+            final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
             return ResetPasswordScreen(
               phone: args['phone'],
               email: args['email'],
               otp: args['otp'],
             );
           },
-          '/home': (context) => const HomeDashboardScreen(),
+          AppConstants.routeHome: (context) => const HomeDashboardScreen(),
         },
       ),
     );
