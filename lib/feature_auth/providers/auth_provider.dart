@@ -118,7 +118,7 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> resetPassword({
+  Future<void> resetPassword(String s, {
     required String identifier,
     required String otp,
     required String newPassword,
@@ -158,4 +158,6 @@ class AuthProvider extends ChangeNotifier {
     _authService.dispose();
     super.dispose();
   }
+
+  verifyPasswordResetOTP(String s, String otp) {}
 }
