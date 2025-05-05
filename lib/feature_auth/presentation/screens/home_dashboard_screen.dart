@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
+import '../../feature_auth/presentation/providers/auth_provider.dart';
 
 class HomeDashboardScreen extends StatelessWidget {
   const HomeDashboardScreen({super.key});
@@ -236,4 +236,4 @@ class HomeDashboardScreen extends StatelessWidget {
       ),
     );
   }
-} 
+}
