@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../constants/app_constants.dart';
+import '../../constants/theme_constants.dart';
+import '../../common/widgets/app_button.dart';
+import '../../common/widgets/app_logo.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -11,22 +15,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  final List<OnboardingItem> _onboardingItems = [
+  final List<OnboardingItem> _items = [
     OnboardingItem(
       title: 'Low Fees',
-      description:
-          'Send money with minimal transaction fees across multiple banks',
-      image: 'assets/images/low_fees.png',
+      description: 'Send money with minimal transaction fees across multiple banks',
+      icon: Icons.attach_money,
     ),
     OnboardingItem(
       title: 'Multi-Bank Support',
-      description: 'Connect and manage multiple bank accounts in one place',
-      image: 'assets/images/multi_bank.png',
+      description: 'Connect and transfer money between different bank accounts',
+      icon: Icons.account_balance,
     ),
     OnboardingItem(
       title: 'Secure Transactions',
-      description: 'Your money is protected with advanced security measures',
-      image: 'assets/images/security.png',
+      description: 'Your money is safe with our advanced security features',
+      icon: Icons.security,
     ),
   ];
 
@@ -42,56 +45,49 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Skip Button
             Align(
               alignment: Alignment.topRight,
               child: TextButton(
                 onPressed: () {
-                  Navigator.pushReplacementNamed(context, '/login');
+                  Navigator.pushReplacementNamed(context, AppConstants.routeLogin);
                 },
                 child: const Text('Skip'),
               ),
             ),
-            // Carousel
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
-                itemCount: _onboardingItems.length,
+                itemCount: _items.length,
                 onPageChanged: (index) {
                   setState(() {
                     _currentPage = index;
                   });
                 },
                 itemBuilder: (context, index) {
-                  final item = _onboardingItems[index];
+                  final item = _items[index];
                   return Padding(
-                    padding: const EdgeInsets.all(24.0),
+                    padding: const EdgeInsets.all(ThemeConstants.spacingL),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Image
-                        Image.asset(
-                          item.image,
-                          height: 200,
+                        Icon(
+                          item.icon,
+                          size: 120,
+                          color: ThemeConstants.primaryColor,
                         ),
-                        const SizedBox(height: 48),
-                        // Title
+                        const SizedBox(height: ThemeConstants.spacingXL),
                         Text(
                           item.title,
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: ThemeConstants.heading2,
+                          textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 16),
-                        // Description
+                        const SizedBox(height: ThemeConstants.spacingM),
                         Text(
                           item.description,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey,
+                          style: ThemeConstants.body1.copyWith(
+                            color: ThemeConstants.textSecondaryColor,
                           ),
+                          textAlign: TextAlign.center,
                         ),
                       ],
                     ),
@@ -99,51 +95,43 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 },
               ),
             ),
-            // Dots Indicator
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
-                _onboardingItems.length,
+                _items.length,
                 (index) => Container(
                   width: 8,
                   height: 8,
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: ThemeConstants.spacingXS,
+                  ),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: _currentPage == index
-                        ? Theme.of(context).primaryColor
-                        : Colors.grey,
+                        ? ThemeConstants.primaryColor
+                        : ThemeConstants.textSecondaryColor.withOpacity(0.3),
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 32),
-            // Next/Get Started Button
+            const SizedBox(height: ThemeConstants.spacingL),
             Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (_currentPage < _onboardingItems.length - 1) {
-                      _pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    } else {
-                      Navigator.pushReplacementNamed(context, '/login');
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: Text(
-                    _currentPage < _onboardingItems.length - 1
-                        ? 'Next'
-                        : 'Get Started',
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                ),
+              padding: const EdgeInsets.all(ThemeConstants.spacingL),
+              child: AppButton(
+                text: _currentPage == _items.length - 1 ? 'Get Started' : 'Next',
+                onPressed: () {
+                  if (_currentPage == _items.length - 1) {
+                    Navigator.pushReplacementNamed(
+                      context,
+                      AppConstants.routeLogin,
+                    );
+                  } else {
+                    _pageController.nextPage(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    );
+                  }
+                },
               ),
             ),
           ],
@@ -156,11 +144,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 class OnboardingItem {
   final String title;
   final String description;
-  final String image;
+  final IconData icon;
 
-  OnboardingItem({
+  const OnboardingItem({
     required this.title,
     required this.description,
-    required this.image,
+    required this.icon,
   });
 }
