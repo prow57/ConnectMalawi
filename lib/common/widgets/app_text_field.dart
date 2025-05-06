@@ -3,94 +3,112 @@ import 'package:flutter/services.dart';
 import '../../constants/theme_constants.dart';
 
 class AppTextField extends StatelessWidget {
-  final String label;
+  final TextEditingController? controller;
+  final String? label;
   final String? hint;
-  final TextEditingController controller;
-  final String? Function(String?)? validator;
-  final TextInputType keyboardType;
+  final String? errorText;
   final bool obscureText;
-  final bool enabled;
-  final int? maxLines;
-  final int? maxLength;
-  final List<TextInputFormatter>? inputFormatters;
+  final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
+  final String? Function(String?)? validator;
   final void Function(String)? onChanged;
-  final void Function()? onTap;
+  final List<TextInputFormatter>? inputFormatters;
+  final int? maxLines;
+  final int? maxLength;
+  final bool enabled;
   final FocusNode? focusNode;
+  final void Function()? onTap;
+  final bool readOnly;
+  final EdgeInsetsGeometry? contentPadding;
 
   const AppTextField({
     super.key,
-    required this.label,
-    required this.controller,
+    this.controller,
+    this.label,
     this.hint,
-    this.validator,
-    this.keyboardType = TextInputType.text,
+    this.errorText,
     this.obscureText = false,
-    this.enabled = true,
-    this.maxLines = 1,
-    this.maxLength,
-    this.inputFormatters,
+    this.keyboardType,
+    this.textInputAction,
     this.prefixIcon,
     this.suffixIcon,
+    this.validator,
     this.onChanged,
-    this.onTap,
+    this.inputFormatters,
+    this.maxLines = 1,
+    this.maxLength,
+    this.enabled = true,
     this.focusNode,
+    this.onTap,
+    this.readOnly = false,
+    this.contentPadding,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: ThemeConstants.body1.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: ThemeConstants.spacingXS),
-        TextFormField(
-          controller: controller,
-          validator: validator,
-          keyboardType: keyboardType,
-          obscureText: obscureText,
-          enabled: enabled,
-          maxLines: maxLines,
-          maxLength: maxLength,
-          inputFormatters: inputFormatters,
-          focusNode: focusNode,
-          onChanged: onChanged,
-          onTap: onTap,
-          decoration: InputDecoration(
-            hintText: hint,
-            prefixIcon: prefixIcon,
-            suffixIcon: suffixIcon,
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusM),
-              borderSide: BorderSide.none,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusM),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusM),
-              borderSide: const BorderSide(color: ThemeConstants.primaryColor),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusM),
-              borderSide: const BorderSide(color: ThemeConstants.errorColor),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      validator: validator,
+      onChanged: onChanged,
+      inputFormatters: inputFormatters,
+      maxLines: maxLines,
+      maxLength: maxLength,
+      enabled: enabled,
+      focusNode: focusNode,
+      onTap: onTap,
+      readOnly: readOnly,
+      style: ThemeConstants.body1,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        errorText: errorText,
+        prefixIcon: prefixIcon,
+        suffixIcon: suffixIcon,
+        contentPadding: contentPadding ??
+            const EdgeInsets.symmetric(
               horizontal: ThemeConstants.spacingM,
-              vertical: ThemeConstants.spacingS,
+              vertical: ThemeConstants.spacingM,
             ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusM),
+          borderSide: const BorderSide(
+            color: ThemeConstants.textSecondaryColor,
           ),
         ),
-      ],
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusM),
+          borderSide: const BorderSide(
+            color: ThemeConstants.textSecondaryColor,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusM),
+          borderSide: const BorderSide(
+            color: ThemeConstants.primaryColor,
+          ),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusM),
+          borderSide: const BorderSide(
+            color: ThemeConstants.errorColor,
+          ),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusM),
+          borderSide: const BorderSide(
+            color: ThemeConstants.errorColor,
+          ),
+        ),
+        filled: true,
+        fillColor: enabled
+            ? ThemeConstants.surfaceColor
+            : ThemeConstants.backgroundColor,
+      ),
     );
   }
 }

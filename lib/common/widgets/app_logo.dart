@@ -3,12 +3,10 @@ import '../../constants/theme_constants.dart';
 
 class AppLogo extends StatelessWidget {
   final double size;
-  final Color? color;
 
   const AppLogo({
     super.key,
-    this.size = 120,
-    this.color,
+    this.size = 100,
   });
 
   @override
@@ -17,17 +15,14 @@ class AppLogo extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: color ?? ThemeConstants.primaryColor,
+        color: ThemeConstants.primaryColor,
         shape: BoxShape.circle,
-        boxShadow: ThemeConstants.cardShadow,
       ),
       child: Center(
-        child: Text(
-          'NS',
-          style: ThemeConstants.heading1.copyWith(
-            color: Colors.white,
-            fontSize: size * 0.4,
-          ),
+        child: Icon(
+          Icons.send,
+          size: size * 0.6,
+          color: Colors.white,
         ),
       ),
     );
