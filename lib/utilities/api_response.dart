@@ -1,33 +1,21 @@
 class ApiResponse<T> {
   final T? data;
   final String? message;
-  final bool success;
-  final int? statusCode;
+  final bool hasError;
 
   ApiResponse({
     this.data,
     this.message,
-    this.success = false,
-    this.statusCode,
+    this.hasError = false,
   });
 
-  factory ApiResponse.success(T data, {String? message, int? statusCode}) {
-    return ApiResponse(
-      data: data,
-      message: message,
-      success: true,
-      statusCode: statusCode,
-    );
+  factory ApiResponse.success(T data) {
+    return ApiResponse(data: data, hasError: false);
   }
 
-  factory ApiResponse.error(String message, {int? statusCode}) {
-    return ApiResponse(
-      message: message,
-      success: false,
-      statusCode: statusCode,
-    );
+  factory ApiResponse.error(String message) {
+    return ApiResponse(message: message, hasError: true);
   }
 
-  bool get hasError => !success;
   bool get hasData => data != null;
-} 
+}
