@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../../utilities/api_response.dart';
+import '../models/user_model.dart';
 import '../../constants/app_constants.dart';
+import '../../utilities/api_response.dart';
 
 class AuthService {
   final String baseUrl;
-  final http.Client _client = http.Client();
+  final http.Client _client;
 
-  AuthService({required this.baseUrl});
+  AuthService({required this.baseUrl}) : _client = http.Client();
 
   Future<ApiResponse<String>> login({
     required String identifier,
@@ -17,28 +18,20 @@ class AuthService {
     try {
       final response = await _client.post(
         Uri.parse('$baseUrl/auth/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          if (isPhone) 'phone' else 'email': identifier,
+        body: {
+          'identifier': identifier,
           'password': password,
-        }),
+          'is_phone': isPhone.toString(),
+        },
       );
 
+      final data = json.decode(response.body);
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return ApiResponse.success(
-          data['token'],
-          message: 'Login successful',
-          statusCode: response.statusCode,
-        );
-      } else {
-        return ApiResponse.error(
-          'Login failed: ${response.body}',
-          statusCode: response.statusCode,
-        );
+        return ApiResponse.success(data['token']);
       }
+      return ApiResponse.error(data['message'] ?? 'Login failed');
     } catch (e) {
-      return ApiResponse.error('Login failed: $e');
+      return ApiResponse.error(e.toString());
     }
   }
 
@@ -51,31 +44,46 @@ class AuthService {
     try {
       final response = await _client.post(
         Uri.parse('$baseUrl/auth/register'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
+        body: {
           'name': name,
-          if (isPhone) 'phone' else 'email': identifier,
+          'identifier': identifier,
           'password': password,
-        }),
+          'is_phone': isPhone.toString(),
+        },
       );
 
+      final data = json.decode(response.body);
       if (response.statusCode == 201) {
-        return ApiResponse.success(
-          'Registration successful',
-          statusCode: response.statusCode,
-        );
-      } else {
-        return ApiResponse.error(
-          'Registration failed: ${response.body}',
-          statusCode: response.statusCode,
-        );
+        return ApiResponse.success(data['token']);
       }
+      return ApiResponse.error(data['message'] ?? 'Registration failed');
     } catch (e) {
-      return ApiResponse.error('Registration failed: $e');
+      return ApiResponse.error(e.toString());
     }
   }
 
-  Future<ApiResponse<String>> sendOTP({
+  Future<UserModel> getCurrentUser(String token) async {
+    try {
+      final response = await _client.get(
+        Uri.parse('$baseUrl/auth/me'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return UserModel.fromJson(data);
+      } else {
+        throw Exception('Failed to get user: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Failed to get user: $e');
+    }
+  }
+
+  Future<ApiResponse<void>> sendOTP({
     required String identifier,
     bool isPhone = false,
     bool isPasswordReset = false,
@@ -83,26 +91,20 @@ class AuthService {
     try {
       final response = await _client.post(
         Uri.parse('$baseUrl/auth/send-otp'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          if (isPhone) 'phone' else 'email': identifier,
-          'isPasswordReset': isPasswordReset,
-        }),
+        body: {
+          'identifier': identifier,
+          'is_phone': isPhone.toString(),
+          'is_password_reset': isPasswordReset.toString(),
+        },
       );
 
+      final data = json.decode(response.body);
       if (response.statusCode == 200) {
-        return ApiResponse.success(
-          'OTP sent successfully',
-          statusCode: response.statusCode,
-        );
-      } else {
-        return ApiResponse.error(
-          'Failed to send OTP: ${response.body}',
-          statusCode: response.statusCode,
-        );
+        return ApiResponse.success(null);
       }
+      return ApiResponse.error(data['message'] ?? 'Failed to send OTP');
     } catch (e) {
-      return ApiResponse.error('Failed to send OTP: $e');
+      return ApiResponse.error(e.toString());
     }
   }
 
@@ -115,31 +117,25 @@ class AuthService {
     try {
       final response = await _client.post(
         Uri.parse('$baseUrl/auth/verify-otp'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          if (isPhone) 'phone' else 'email': identifier,
+        body: {
+          'identifier': identifier,
           'otp': otp,
-          'isPasswordReset': isPasswordReset,
-        }),
+          'is_phone': isPhone.toString(),
+          'is_password_reset': isPasswordReset.toString(),
+        },
       );
 
+      final data = json.decode(response.body);
       if (response.statusCode == 200) {
-        return ApiResponse.success(
-          'OTP verified successfully',
-          statusCode: response.statusCode,
-        );
-      } else {
-        return ApiResponse.error(
-          'OTP verification failed: ${response.body}',
-          statusCode: response.statusCode,
-        );
+        return ApiResponse.success(data['token']);
       }
+      return ApiResponse.error(data['message'] ?? 'Failed to verify OTP');
     } catch (e) {
-      return ApiResponse.error('OTP verification failed: $e');
+      return ApiResponse.error(e.toString());
     }
   }
 
-  Future<ApiResponse<String>> resetPassword({
+  Future<ApiResponse<void>> resetPassword({
     required String identifier,
     required String otp,
     required String newPassword,
@@ -148,31 +144,25 @@ class AuthService {
     try {
       final response = await _client.post(
         Uri.parse('$baseUrl/auth/reset-password'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          if (isPhone) 'phone' else 'email': identifier,
+        body: {
+          'identifier': identifier,
           'otp': otp,
-          'newPassword': newPassword,
-        }),
+          'new_password': newPassword,
+          'is_phone': isPhone.toString(),
+        },
       );
 
+      final data = json.decode(response.body);
       if (response.statusCode == 200) {
-        return ApiResponse.success(
-          'Password reset successful',
-          statusCode: response.statusCode,
-        );
-      } else {
-        return ApiResponse.error(
-          'Password reset failed: ${response.body}',
-          statusCode: response.statusCode,
-        );
+        return ApiResponse.success(null);
       }
+      return ApiResponse.error(data['message'] ?? 'Failed to reset password');
     } catch (e) {
-      return ApiResponse.error('Password reset failed: $e');
+      return ApiResponse.error(e.toString());
     }
   }
 
   void dispose() {
     _client.close();
   }
-} 
+}
