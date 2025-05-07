@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../constants/route_constants.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'dart:io';
 
 class TransferLimitsScreen extends StatefulWidget {
   const TransferLimitsScreen({super.key});
@@ -12,6 +16,9 @@ class _TransferLimitsScreenState extends State<TransferLimitsScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  String? _profilePhotoPath;
+  bool _isUploading = false;
+  String? _errorMessage;
 
   final Map<String, Map<String, dynamic>> _limits = {
     'Daily Limit': {
@@ -60,6 +67,102 @@ class _TransferLimitsScreenState extends State<TransferLimitsScreen>
   void dispose() {
     _animationController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      setState(() {
+        _isUploading = true;
+        _errorMessage = null;
+      });
+
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: source,
+        imageQuality: 80,
+        maxWidth: 1200,
+        maxHeight: 1200,
+      );
+
+      if (image != null) {
+        final croppedFile = await ImageCropper().cropImage(
+          sourcePath: image.path,
+          aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+          uiSettings: [
+            AndroidUiSettings(
+              toolbarTitle: 'Crop Photo',
+              toolbarColor: Theme.of(context).primaryColor,
+              toolbarWidgetColor: Colors.white,
+              initAspectRatio: CropAspectRatioPreset.square,
+              lockAspectRatio: true,
+            ),
+            IOSUiSettings(
+              title: 'Crop Photo',
+              aspectRatioLockEnabled: true,
+              resetAspectRatioEnabled: false,
+              rotateButtonsHidden: true,
+              doneButtonTitle: 'Done',
+              cancelButtonTitle: 'Cancel',
+            ),
+          ],
+        );
+
+        if (croppedFile != null) {
+          final file = File(croppedFile.path);
+          final size = await file.length();
+
+          // Validate file size (max 5MB)
+          if (size > 5 * 1024 * 1024) {
+            setState(() {
+              _errorMessage = 'Image size should be less than 5MB';
+            });
+            return;
+          }
+
+          setState(() {
+            _profilePhotoPath = croppedFile.path;
+          });
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Failed to process image. Please try again.';
+      });
+    } finally {
+      setState(() {
+        _isUploading = false;
+      });
+    }
+  }
+
+  void _showImageSourceDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Choose Image Source'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Take Photo'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Choose from Gallery'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -226,15 +329,15 @@ class _TransferLimitsScreenState extends State<TransferLimitsScreen>
             const Text(
               'Complete the full KYC verification process to increase your transfer limits and access additional features.',
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  Navigator.pushNamed(context, '/settings/verify-account');
+                  Navigator.pushNamed(context, RouteConstants.kyc);
                 },
                 icon: const Icon(Icons.verified_user),
-                label: const Text('Verify Account'),
+                label: const Text('Start Verification'),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
