@@ -117,44 +117,44 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
           const Divider(),
 
           // PIN & Password
-          _buildSectionHeader(context, 'PIN & Password'),
-          _buildSettingTile(
-            context,
-            title: 'Change Transaction PIN',
-            subtitle: 'Update your 4-digit PIN',
-            onTap: () {
-              Navigator.pushNamed(context, '/change-pin');
-            },
-          ),
-          _buildSettingTile(
-            context,
-            title: 'Change Password',
-            subtitle: 'Update your account password',
-            onTap: () {
-              Navigator.pushNamed(context, '/change-password');
-            },
-          ),
-          const Divider(),
+          // _buildSectionHeader(context, 'PIN & Password'),
+          // _buildSettingTile(
+          //   context,
+          //   title: 'Change Transaction PIN',
+          //   subtitle: 'Update your 4-digit PIN',
+          //   onTap: () {
+          //     Navigator.pushNamed(context, '/change-pin');
+          //   },
+          // ),
+          // _buildSettingTile(
+          //   context,
+          //   title: 'Change Password',
+          //   subtitle: 'Update your account password',
+          //   onTap: () {
+          //     Navigator.pushNamed(context, '/change-password');
+          //   },
+          // ),
+          // const Divider(),
 
-          // Transaction Limits
-          _buildSectionHeader(context, 'Transaction Limits'),
-          _buildSettingTile(
-            context,
-            title: 'Daily Transfer Limit',
-            subtitle: 'Set maximum daily transfer amount',
-            onTap: () {
-              Navigator.pushNamed(context, '/transfer-limits');
-            },
-          ),
-          _buildSettingTile(
-            context,
-            title: 'Single Transfer Limit',
-            subtitle: 'Set maximum single transfer amount',
-            onTap: () {
-              Navigator.pushNamed(context, '/transfer-limits');
-            },
-          ),
-          const Divider(),
+          // // Transaction Limits
+          // _buildSectionHeader(context, 'Transaction Limits'),
+          // _buildSettingTile(
+          //   context,
+          //   title: 'Daily Transfer Limit',
+          //   subtitle: 'Set maximum daily transfer amount',
+          //   onTap: () {
+          //     Navigator.pushNamed(context, '/transfer-limits');
+          //   },
+          // ),
+          // _buildSettingTile(
+          //   context,
+          //   title: 'Single Transfer Limit',
+          //   subtitle: 'Set maximum single transfer amount',
+          //   onTap: () {
+          //     Navigator.pushNamed(context, '/transfer-limits');
+          //   },
+          // ),
+          //const Divider(),
 
           // Security Log
           _buildSectionHeader(context, 'Security Log'),

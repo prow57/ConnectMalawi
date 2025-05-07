@@ -1,8 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:nyasa_send/feature_settings/screens/transfer_limits_screen.dart';
-import 'package:nyasa_send/feature_settings/screens/security_log_screen.dart';
-import 'package:nyasa_send/feature_settings/screens/help_center_screen.dart';
-import 'package:nyasa_send/feature_settings/screens/about_screen.dart';
 import 'package:nyasa_send/constants/route_constants.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -23,27 +19,22 @@ class SettingsScreen extends StatelessWidget {
             icon: Icons.person,
             title: 'Profile',
             subtitle: 'Update your personal information',
-            onTap: () {
-              Navigator.pushNamed(context, RouteConstants.profile);
-            },
+            onTap: () => Navigator.pushNamed(context, RouteConstants.profile),
           ),
           _buildSettingsItem(
             context,
             icon: Icons.account_balance,
             title: 'Bank Accounts',
             subtitle: 'Manage your linked bank accounts',
-            onTap: () {
-              Navigator.pushNamed(context, RouteConstants.accounts);
-            },
+            onTap: () => Navigator.pushNamed(context, RouteConstants.accounts),
           ),
           _buildSettingsItem(
             context,
             icon: Icons.phone_android,
             title: 'Mobile Money',
             subtitle: 'Manage your mobile money accounts',
-            onTap: () {
-              Navigator.pushNamed(context, RouteConstants.mobileSetup);
-            },
+            onTap: () =>
+                Navigator.pushNamed(context, RouteConstants.mobileSetup),
           ),
           const Divider(),
 
@@ -54,27 +45,31 @@ class SettingsScreen extends StatelessWidget {
             icon: Icons.lock,
             title: 'Change PIN',
             subtitle: 'Update your transaction PIN',
-            onTap: () {
-              Navigator.pushNamed(context, RouteConstants.changePin);
-            },
+            onTap: () => Navigator.pushNamed(context, RouteConstants.changePin),
           ),
+          // _buildSettingsItem(
+          //   context,
+          //   icon: Icons.password,
+          //   title: 'Change Password',
+          //   subtitle: 'Update your account password',
+          //   onTap: () =>
+          //       Navigator.pushNamed(context, RouteConstants.changePassword),
+          // ),
           _buildSettingsItem(
             context,
             icon: Icons.fingerprint,
-            title: 'Biometric Authentication',
-            subtitle: 'Enable fingerprint or face ID',
-            onTap: () {
-              Navigator.pushNamed(context, RouteConstants.securitySettings);
-            },
+            title: 'Security Settings',
+            subtitle: 'Biometric and 2FA settings',
+            onTap: () =>
+                Navigator.pushNamed(context, RouteConstants.securitySettings),
           ),
           _buildSettingsItem(
             context,
             icon: Icons.history,
             title: 'Security Log',
             subtitle: 'View your account activity',
-            onTap: () {
-              Navigator.pushNamed(context, RouteConstants.securityLog);
-            },
+            onTap: () =>
+                Navigator.pushNamed(context, RouteConstants.securityLog),
           ),
           const Divider(),
 
@@ -85,18 +80,16 @@ class SettingsScreen extends StatelessWidget {
             icon: Icons.account_balance_wallet,
             title: 'Transfer Limits',
             subtitle: 'Set your transaction limits',
-            onTap: () {
-              Navigator.pushNamed(context, RouteConstants.transferLimits);
-            },
+            onTap: () =>
+                Navigator.pushNamed(context, RouteConstants.transferLimits),
           ),
           _buildSettingsItem(
             context,
             icon: Icons.favorite,
             title: 'Beneficiaries',
             subtitle: 'Manage your saved beneficiaries',
-            onTap: () {
-              Navigator.pushNamed(context, RouteConstants.recipients);
-            },
+            onTap: () =>
+                Navigator.pushNamed(context, RouteConstants.recipients),
           ),
           const Divider(),
 
@@ -107,27 +100,23 @@ class SettingsScreen extends StatelessWidget {
             icon: Icons.language,
             title: 'Language',
             subtitle: 'English',
-            onTap: () {
-              // TODO: Implement language settings
-            },
+            onTap: () => Navigator.pushNamed(context, RouteConstants.language),
           ),
           _buildSettingsItem(
             context,
             icon: Icons.notifications,
             title: 'Notifications',
             subtitle: 'Manage your notification preferences',
-            onTap: () {
-              Navigator.pushNamed(context, RouteConstants.notifications);
-            },
+            onTap: () =>
+                Navigator.pushNamed(context, RouteConstants.notifications),
           ),
           _buildSettingsItem(
             context,
             icon: Icons.dark_mode,
             title: 'Appearance',
             subtitle: 'Light',
-            onTap: () {
-              // TODO: Implement appearance settings
-            },
+            onTap: () =>
+                Navigator.pushNamed(context, RouteConstants.appearance),
           ),
           const Divider(),
 
@@ -138,18 +127,35 @@ class SettingsScreen extends StatelessWidget {
             icon: Icons.help,
             title: 'Help Center',
             subtitle: 'FAQs and support',
-            onTap: () {
-              Navigator.pushNamed(context, RouteConstants.help);
-            },
+            onTap: () => Navigator.pushNamed(context, RouteConstants.help),
+          ),
+          _buildSettingsItem(
+            context,
+            icon: Icons.feedback,
+            title: 'Send Feedback',
+            subtitle: 'Help us improve',
+            onTap: () => Navigator.pushNamed(context, RouteConstants.feedback),
           ),
           _buildSettingsItem(
             context,
             icon: Icons.info,
             title: 'About',
             subtitle: 'App information and legal details',
-            onTap: () {
-              Navigator.pushNamed(context, RouteConstants.about);
-            },
+            onTap: () => Navigator.pushNamed(context, RouteConstants.about),
+          ),
+          _buildSettingsItem(
+            context,
+            icon: Icons.description,
+            title: 'Terms of Service',
+            subtitle: 'Legal terms and conditions',
+            onTap: () => Navigator.pushNamed(context, RouteConstants.terms),
+          ),
+          _buildSettingsItem(
+            context,
+            icon: Icons.privacy_tip,
+            title: 'Privacy Policy',
+            subtitle: 'How we handle your data',
+            onTap: () => Navigator.pushNamed(context, RouteConstants.privacy),
           ),
           const SizedBox(height: 16),
 
@@ -157,30 +163,7 @@ class SettingsScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: ElevatedButton.icon(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Logout'),
-                    content: const Text('Are you sure you want to logout?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          // TODO: Implement logout logic
-                          Navigator.pop(context);
-                          Navigator.pushReplacementNamed(
-                              context, RouteConstants.welcome);
-                        },
-                        child: const Text('Logout'),
-                      ),
-                    ],
-                  ),
-                );
-              },
+              onPressed: () => _showLogoutDialog(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
@@ -225,6 +208,29 @@ class SettingsScreen extends StatelessWidget {
       subtitle: Text(subtitle),
       trailing: const Icon(Icons.chevron_right),
       onTap: onTap,
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Logout'),
+        content: const Text('Are you sure you want to logout?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pushReplacementNamed(context, RouteConstants.welcome);
+            },
+            child: const Text('Logout'),
+          ),
+        ],
+      ),
     );
   }
 }

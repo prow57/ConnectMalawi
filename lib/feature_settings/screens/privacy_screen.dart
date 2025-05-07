@@ -1,40 +1,40 @@
 import 'package:flutter/material.dart';
 
-class NotificationsScreen extends StatefulWidget {
-  const NotificationsScreen({super.key});
+class PrivacyScreen extends StatefulWidget {
+  const PrivacyScreen({super.key});
 
   @override
-  State<NotificationsScreen> createState() => _NotificationsScreenState();
+  State<PrivacyScreen> createState() => _PrivacyScreenState();
 }
 
-class _NotificationsScreenState extends State<NotificationsScreen>
+class _PrivacyScreenState extends State<PrivacyScreen>
     with SingleTickerProviderStateMixin {
-  bool _pushNotifications = true;
-  bool _emailNotifications = true;
-  bool _smsNotifications = false;
+  bool _locationSharing = true;
+  bool _dataCollection = true;
+  bool _analytics = true;
   bool _isLoading = false;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
-  final List<Map<String, dynamic>> _notificationTypes = [
+  final List<Map<String, dynamic>> _privacySettings = [
     {
-      'title': 'Push Notifications',
-      'description': 'Receive notifications on your device',
-      'icon': Icons.notifications,
-      'key': 'push',
+      'title': 'Location Sharing',
+      'description': 'Allow the app to access your location',
+      'icon': Icons.location_on,
+      'key': 'location',
     },
     {
-      'title': 'Email Notifications',
-      'description': 'Receive notifications via email',
-      'icon': Icons.email,
-      'key': 'email',
+      'title': 'Data Collection',
+      'description': 'Allow the app to collect usage data',
+      'icon': Icons.data_usage,
+      'key': 'data',
     },
     {
-      'title': 'SMS Notifications',
-      'description': 'Receive notifications via SMS',
-      'icon': Icons.sms,
-      'key': 'sms',
+      'title': 'Analytics',
+      'description': 'Allow the app to collect analytics data',
+      'icon': Icons.analytics,
+      'key': 'analytics',
     },
   ];
 
@@ -75,7 +75,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications'),
+        title: const Text('Privacy'),
         elevation: 0,
       ),
       body: Container(
@@ -104,12 +104,12 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                       Row(
                         children: [
                           Icon(
-                            Icons.notifications_active,
+                            Icons.privacy_tip,
                             color: Theme.of(context).primaryColor,
                           ),
                           const SizedBox(width: 8),
                           const Text(
-                            'Notification Settings',
+                            'Privacy Settings',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -119,7 +119,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        'Manage how you receive notifications from the app.',
+                        'Manage your privacy preferences and data sharing settings.',
                         style: TextStyle(
                           color: Colors.grey,
                           height: 1.5,
@@ -129,8 +129,8 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                   ),
                 ),
                 const SizedBox(height: 16),
-                ..._notificationTypes
-                    .map((type) => _buildNotificationTile(type)),
+                ..._privacySettings
+                    .map((setting) => _buildPrivacyTile(setting)),
                 const SizedBox(height: 16),
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
@@ -154,38 +154,84 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Notification Preferences',
+                        'Data Management',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 16),
-                      _buildPreferenceItem(
-                        'Quiet Hours',
-                        'Set specific hours when you don\'t want to receive notifications',
-                        Icons.access_time,
+                      _buildDataManagementItem(
+                        'Download My Data',
+                        'Get a copy of your personal data',
+                        Icons.download,
                         onTap: () {
-                          // TODO: Implement quiet hours settings
+                          // TODO: Implement data download
                         },
                       ),
                       const Divider(),
-                      _buildPreferenceItem(
-                        'Sound & Vibration',
-                        'Customize notification sounds and vibration patterns',
-                        Icons.volume_up,
+                      _buildDataManagementItem(
+                        'Delete Account',
+                        'Permanently delete your account and data',
+                        Icons.delete_forever,
                         onTap: () {
-                          // TODO: Implement sound & vibration settings
+                          // TODO: Implement account deletion
                         },
+                        isDestructive: true,
                       ),
-                      const Divider(),
-                      _buildPreferenceItem(
-                        'Priority Notifications',
-                        'Choose which notifications are most important',
-                        Icons.priority_high,
-                        onTap: () {
-                          // TODO: Implement priority notifications settings
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.grey.withOpacity(0.2),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Privacy Policy',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Read our privacy policy to understand how we collect, use, and protect your data.',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          height: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          // TODO: Open privacy policy
                         },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).primaryColor,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text('View Privacy Policy'),
                       ),
                     ],
                   ),
@@ -198,8 +244,8 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     );
   }
 
-  Widget _buildNotificationTile(Map<String, dynamic> type) {
-    final bool isEnabled = _getNotificationState(type['key']);
+  Widget _buildPrivacyTile(Map<String, dynamic> setting) {
+    final bool isEnabled = _getPrivacyState(setting['key']);
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -220,7 +266,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
             fontWeight: isEnabled ? FontWeight.bold : FontWeight.normal,
             color: isEnabled ? Theme.of(context).primaryColor : Colors.black,
           ),
-          child: Text(type['title']),
+          child: Text(setting['title']),
         ),
         subtitle: AnimatedDefaultTextStyle(
           duration: const Duration(milliseconds: 300),
@@ -229,7 +275,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                 ? Theme.of(context).primaryColor.withOpacity(0.7)
                 : Colors.grey,
           ),
-          child: Text(type['description']),
+          child: Text(setting['description']),
         ),
         secondary: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
@@ -241,7 +287,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
-            type['icon'],
+            setting['icon'],
             color: isEnabled ? Theme.of(context).primaryColor : Colors.grey,
           ),
         ),
@@ -249,13 +295,18 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         activeColor: Theme.of(context).primaryColor,
         onChanged: _isLoading
             ? null
-            : (value) => _updateNotificationState(type['key'], value),
+            : (value) => _updatePrivacyState(setting['key'], value),
       ),
     );
   }
 
-  Widget _buildPreferenceItem(String title, String subtitle, IconData icon,
-      {required VoidCallback onTap}) {
+  Widget _buildDataManagementItem(
+    String title,
+    String subtitle,
+    IconData icon, {
+    required VoidCallback onTap,
+    bool isDestructive = false,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
@@ -266,12 +317,15 @@ class _NotificationsScreenState extends State<NotificationsScreen>
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withOpacity(0.1),
+                color: isDestructive
+                    ? Colors.red.withOpacity(0.1)
+                    : Theme.of(context).primaryColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
                 icon,
-                color: Theme.of(context).primaryColor,
+                color:
+                    isDestructive ? Colors.red : Theme.of(context).primaryColor,
               ),
             ),
             const SizedBox(width: 16),
@@ -281,8 +335,9 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
+                      color: isDestructive ? Colors.red : null,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -306,31 +361,31 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     );
   }
 
-  bool _getNotificationState(String key) {
+  bool _getPrivacyState(String key) {
     switch (key) {
-      case 'push':
-        return _pushNotifications;
-      case 'email':
-        return _emailNotifications;
-      case 'sms':
-        return _smsNotifications;
+      case 'location':
+        return _locationSharing;
+      case 'data':
+        return _dataCollection;
+      case 'analytics':
+        return _analytics;
       default:
         return false;
     }
   }
 
-  Future<void> _updateNotificationState(String key, bool value) async {
+  Future<void> _updatePrivacyState(String key, bool value) async {
     setState(() {
       _isLoading = true;
       switch (key) {
-        case 'push':
-          _pushNotifications = value;
+        case 'location':
+          _locationSharing = value;
           break;
-        case 'email':
-          _emailNotifications = value;
+        case 'data':
+          _dataCollection = value;
           break;
-        case 'sms':
-          _smsNotifications = value;
+        case 'analytics':
+          _analytics = value;
           break;
       }
     });
@@ -346,7 +401,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              '${key.toUpperCase()} notifications ${value ? 'enabled' : 'disabled'}'),
+              '${key.toUpperCase()} sharing ${value ? 'enabled' : 'disabled'}'),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(16),

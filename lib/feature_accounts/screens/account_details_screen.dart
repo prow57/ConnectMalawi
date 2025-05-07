@@ -4,23 +4,24 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
-class TransactionDetailsScreen extends StatefulWidget {
-  final Map<String, dynamic> transaction;
+class AccountDetailsScreen extends StatefulWidget {
+  final Map<String, dynamic> account;
 
-  const TransactionDetailsScreen({
+  const AccountDetailsScreen({
     super.key,
-    required this.transaction,
+    required this.account,
   });
 
   @override
-  State<TransactionDetailsScreen> createState() => _TransactionDetailsScreenState();
+  State<AccountDetailsScreen> createState() => _AccountDetailsScreenState();
 }
 
-class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> with SingleTickerProviderStateMixin {
+class _AccountDetailsScreenState extends State<AccountDetailsScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
-  bool _isGeneratingReceipt = false;
+  bool _isGeneratingStatement = false;
 
   @override
   void initState() {
@@ -53,47 +54,45 @@ class _TransactionDetailsScreenState extends State<TransactionDetailsScreen> wit
     super.dispose();
   }
 
-  Future<void> _generateReceipt() async {
+  Future<void> _generateStatement() async {
     setState(() {
-      _isGeneratingReceipt = true;
+      _isGeneratingStatement = true;
     });
 
     try {
       // Simulate API call delay
       await Future.delayed(const Duration(seconds: 2));
 
-      // Generate receipt content
-      final receipt = '''
-Nyasa Send - Transaction Receipt
-Transaction ID: ${widget.transaction['id']}
-Date: ${DateFormat('dd/MM/yyyy HH:mm').format(widget.transaction['date'])}
+      // Generate statement content
+      final statement = '''
+Nyasa Send - Account Statement
+Account: ${widget.account['name']}
+Account Number: ${widget.account['accountNumber']}
+Type: ${widget.account['type'] == 'bank' ? 'Bank Account' : 'Mobile Money'}
+Generated: ${DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now())}
 
-Amount: MWK ${widget.transaction['amount'].toStringAsFixed(2)}
-Type: ${widget.transaction['type'] == 'sent' ? 'Sent' : 'Received'}
-Status: ${widget.transaction['status']}
+Available Balance: MWK ${widget.account['balance'].toStringAsFixed(2)}
 
-From: ${widget.transaction['fromAccount']}
-To: ${widget.transaction['toAccount']}
-Note: ${widget.transaction['note']}
-
-Thank you for using Nyasa Send!
+Recent Transactions:
+No transactions found for the selected period.
 ''';
 
-      // Save receipt to temporary file
+      // Save statement to temporary file
       final directory = await getTemporaryDirectory();
-      final file = File('${directory.path}/receipt_${DateTime.now().millisecondsSinceEpoch}.txt');
-      await file.writeAsString(receipt);
+      final file = File(
+          '${directory.path}/statement_${DateTime.now().millisecondsSinceEpoch}.txt');
+      await file.writeAsString(statement);
 
-      // Share the receipt
+      // Share the statement
       await Share.shareXFiles(
         [XFile(file.path)],
-        text: 'My Nyasa Send Transaction Receipt',
+        text: 'My Nyasa Send Account Statement',
       );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error generating receipt: $e'),
+            content: Text('Error generating statement: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -101,7 +100,7 @@ Thank you for using Nyasa Send!
     } finally {
       if (mounted) {
         setState(() {
-          _isGeneratingReceipt = false;
+          _isGeneratingStatement = false;
         });
       }
     }
@@ -109,9 +108,8 @@ Thank you for using Nyasa Send!
 
   @override
   Widget build(BuildContext context) {
-    final isSent = widget.transaction['type'] == 'sent';
-    final color = isSent ? Colors.red : Colors.green;
-    final dateFormat = DateFormat('MMM dd, yyyy HH:mm');
+    final theme = Theme.of(context);
+    final size = MediaQuery.of(context).size;
 
     return Scaffold(
       body: CustomScrollView(
@@ -127,8 +125,12 @@ Thank you for using Nyasa Send!
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      color,
-                      color.withOpacity(0.8),
+                      widget.account['type'] == 'bank'
+                          ? Colors.blue
+                          : Colors.green,
+                      widget.account['type'] == 'bank'
+                          ? Colors.blue.shade700
+                          : Colors.green.shade700,
                     ],
                   ),
                 ),
@@ -141,23 +143,25 @@ Thank you for using Nyasa Send!
                         radius: 40,
                         backgroundColor: Colors.white.withOpacity(0.2),
                         child: Icon(
-                          isSent ? Icons.arrow_upward : Icons.arrow_downward,
+                          widget.account['type'] == 'bank'
+                              ? Icons.account_balance
+                              : Icons.phone_android,
                           size: 40,
                           color: Colors.white,
                         ),
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        '${isSent ? '-' : '+'} MWK ${widget.transaction['amount'].toStringAsFixed(2)}',
+                        widget.account['name'],
                         style: const TextStyle(
-                          fontSize: 32,
+                          fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        isSent ? 'Sent' : 'Received',
+                        widget.account['accountNumber'],
                         style: TextStyle(
                           fontSize: 16,
                           color: Colors.white.withOpacity(0.8),
@@ -176,7 +180,7 @@ Thank you for using Nyasa Send!
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Status Card
+                  // Balance Card
                   FadeTransition(
                     opacity: _fadeAnimation,
                     child: SlideTransition(
@@ -193,32 +197,19 @@ Thank you for using Nyasa Send!
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 8,
+                              Text(
+                                'Available Balance',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
                                 ),
-                                decoration: BoxDecoration(
-                                  color: Colors.green.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(
-                                      Icons.check_circle,
-                                      color: Colors.green,
-                                      size: 20,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      widget.transaction['status'].toString().toUpperCase(),
-                                      style: const TextStyle(
-                                        color: Colors.green,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'MWK ${widget.account['balance'].toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ],
@@ -228,7 +219,50 @@ Thank you for using Nyasa Send!
                     ),
                   ),
                   const SizedBox(height: 24),
-                  // Transaction Information
+                  // Quick Actions
+                  FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: SlideTransition(
+                      position: _slideAnimation,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: _buildActionButton(
+                              icon: Icons.send,
+                              label: 'Send',
+                              onTap: () {
+                                Navigator.pushNamed(context, '/transfer',
+                                    arguments: {
+                                      'sourceAccount': widget.account,
+                                    });
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _buildActionButton(
+                              icon: Icons.download,
+                              label: 'Statement',
+                              onTap: _generateStatement,
+                              isLoading: _isGeneratingStatement,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _buildActionButton(
+                              icon: Icons.history,
+                              label: 'History',
+                              onTap: () {
+                                // TODO: Implement transaction history
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // Account Information
                   FadeTransition(
                     opacity: _fadeAnimation,
                     child: SlideTransition(
@@ -252,7 +286,7 @@ Thank you for using Nyasa Send!
                                   ),
                                   const SizedBox(width: 8),
                                   const Text(
-                                    'Transaction Information',
+                                    'Account Information',
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
@@ -269,15 +303,21 @@ Thank you for using Nyasa Send!
                                 ),
                                 child: Column(
                                   children: [
-                                    _buildInfoRow('Date', dateFormat.format(widget.transaction['date'])),
+                                    _buildInfoRow(
+                                        'Account Type',
+                                        widget.account['type'] == 'bank'
+                                            ? 'Bank Account'
+                                            : 'Mobile Money'),
                                     const Divider(height: 24),
-                                    _buildInfoRow('From', widget.transaction['fromAccount']),
+                                    _buildInfoRow('Account Number',
+                                        widget.account['accountNumber']),
                                     const Divider(height: 24),
-                                    _buildInfoRow('To', widget.transaction['toAccount']),
+                                    _buildInfoRow(
+                                        'Account Name', widget.account['name']),
                                     const Divider(height: 24),
-                                    _buildInfoRow('Note', widget.transaction['note']),
+                                    _buildInfoRow('Status', 'Active'),
                                     const Divider(height: 24),
-                                    _buildInfoRow('Transaction ID', widget.transaction['id']),
+                                    _buildInfoRow('Last Updated', 'Just now'),
                                   ],
                                 ),
                               ),
@@ -288,34 +328,50 @@ Thank you for using Nyasa Send!
                     ),
                   ),
                   const SizedBox(height: 24),
-                  // Action Buttons
+                  // Recent Transactions
                   FadeTransition(
                     opacity: _fadeAnimation,
                     child: SlideTransition(
                       position: _slideAnimation,
-                      child: Row(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: _buildActionButton(
-                              icon: Icons.share,
-                              label: 'Share',
-                              onTap: () {
-                                // TODO: Implement share functionality
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Share functionality coming soon'),
-                                  ),
-                                );
-                              },
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Recent Transactions',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  // TODO: Navigate to full transaction history
+                                },
+                                child: const Text('View All'),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: _buildActionButton(
-                              icon: Icons.download,
-                              label: 'Receipt',
-                              onTap: _generateReceipt,
-                              isLoading: _isGeneratingReceipt,
+                          const SizedBox(height: 16),
+                          // Placeholder for transactions
+                          Center(
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.history,
+                                  size: 48,
+                                  color: Colors.grey[400],
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'No recent transactions',
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],

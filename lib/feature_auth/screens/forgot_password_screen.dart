@@ -55,11 +55,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
+        child: Form(
+          key: _formKey,
+          child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
+            children: [
                   const SizedBox(height: 40),
                   // Icon
                   Center(
@@ -84,10 +84,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   Text(
                     'Enter your ${_usePhone ? 'phone number' : 'email'} and we\'ll send you instructions to reset your password.',
                     style: theme.textTheme.bodyLarge,
-                    textAlign: TextAlign.center,
-                  ),
+                textAlign: TextAlign.center,
+              ),
                   const SizedBox(height: 40),
-                  // Toggle between phone and email
+              // Toggle between phone and email
                   Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
@@ -95,87 +95,87 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
-                      children: [
+                children: [
                         Expanded(
                           child: ChoiceChip(
-                            label: const Text('Phone'),
-                            selected: _usePhone,
-                            onSelected: (selected) {
-                              setState(() {
-                                _usePhone = selected;
-                              });
-                            },
+                    label: const Text('Phone'),
+                    selected: _usePhone,
+                    onSelected: (selected) {
+                      setState(() {
+                        _usePhone = selected;
+                      });
+                    },
                             backgroundColor: Colors.transparent,
                             selectedColor: theme.primaryColor.withOpacity(0.2),
                           ),
-                        ),
+                  ),
                         Expanded(
                           child: ChoiceChip(
-                            label: const Text('Email'),
-                            selected: !_usePhone,
-                            onSelected: (selected) {
-                              setState(() {
-                                _usePhone = !selected;
-                              });
-                            },
+                    label: const Text('Email'),
+                    selected: !_usePhone,
+                    onSelected: (selected) {
+                      setState(() {
+                        _usePhone = !selected;
+                      });
+                    },
                             backgroundColor: Colors.transparent,
                             selectedColor: theme.primaryColor.withOpacity(0.2),
                           ),
-                        ),
-                      ],
-                    ),
+                  ),
+                ],
+              ),
                   ),
                   const SizedBox(height: 24),
-                  // Phone/Email field
-                  if (_usePhone)
-                    TextFormField(
-                      controller: _phoneController,
+              // Phone/Email field
+              if (_usePhone)
+                TextFormField(
+                  controller: _phoneController,
                       decoration: InputDecoration(
-                        labelText: 'Phone Number',
+                    labelText: 'Phone Number',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        prefixText: '+265 ',
+                    prefixText: '+265 ',
                         prefixIcon: const Icon(Icons.phone),
-                      ),
-                      keyboardType: TextInputType.phone,
+                  ),
+                  keyboardType: TextInputType.phone,
                       validator: _validatePhone,
-                    )
-                  else
-                    TextFormField(
-                      controller: _emailController,
+                )
+              else
+                TextFormField(
+                  controller: _emailController,
                       decoration: InputDecoration(
-                        labelText: 'Email',
+                    labelText: 'Email',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                         prefixIcon: const Icon(Icons.email),
-                      ),
-                      keyboardType: TextInputType.emailAddress,
+                  ),
+                  keyboardType: TextInputType.emailAddress,
                       validator: _validateEmail,
                     ),
                   const SizedBox(height: 32),
                   // Send Reset Link button
-                  ElevatedButton(
+              ElevatedButton(
                     onPressed: _isLoading
                         ? null
                         : () async {
-                            if (_formKey.currentState!.validate()) {
+                  if (_formKey.currentState!.validate()) {
                               setState(() {
                                 _isLoading = true;
                               });
 
-                              try {
+                    try {
                                 final authProvider =
                                     context.read<AuthProvider>();
-                                await authProvider.sendOTP(
-                                  identifier: _usePhone
-                                      ? _phoneController.text
-                                      : _emailController.text,
-                                  isPhone: _usePhone,
-                                  isPasswordReset: true,
-                                );
-                                if (mounted) {
+                      await authProvider.sendOTP(
+                        identifier: _usePhone
+                            ? _phoneController.text
+                            : _emailController.text,
+                        isPhone: _usePhone,
+                        isPasswordReset: true,
+                      );
+                      if (mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text(
@@ -184,10 +184,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                     ),
                                   );
                                   Navigator.pop(context);
-                                }
-                              } catch (e) {
-                                if (mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
+                      }
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text(e.toString()),
                                       backgroundColor: Colors.red,
@@ -221,16 +221,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             'Send Reset Link',
                             style: TextStyle(fontSize: 16),
                           ),
-                  ),
-                  const SizedBox(height: 16),
+              ),
+              const SizedBox(height: 16),
                   // Back to Login
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Back to Login'),
-                  ),
-                ],
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('Back to Login'),
+              ),
+            ],
               ),
             ),
           ),

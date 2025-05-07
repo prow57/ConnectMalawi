@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'transfer_confirmation_screen.dart';
 
 class TransferScreen extends StatefulWidget {
   const TransferScreen({super.key});
@@ -43,19 +44,18 @@ class _TransferScreenState extends State<TransferScreen> {
   }
 
   void _calculateFee() {
-    // Simulated fee calculation based on amount and speed
     final amount = double.tryParse(_amountController.text) ?? 0;
     if (amount > 0) {
       setState(() {
         switch (_selectedSpeed) {
           case 'Instant':
-            _fee = amount * 0.02; // 2% fee
+            _fee = amount * 0.02;
             break;
           case 'Standard (1-2 hours)':
-            _fee = amount * 0.015; // 1.5% fee
+            _fee = amount * 0.015;
             break;
           case 'Economy (24 hours)':
-            _fee = amount * 0.01; // 1% fee
+            _fee = amount * 0.01;
             break;
         }
       });
@@ -69,6 +69,9 @@ class _TransferScreenState extends State<TransferScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Send Money'),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        foregroundColor: theme.primaryColor,
       ),
       body: Form(
         key: _formKey,
@@ -76,169 +79,220 @@ class _TransferScreenState extends State<TransferScreen> {
           padding: const EdgeInsets.all(16),
           children: [
             // From Account
-            _buildSectionHeader(context, 'From Account'),
-            DropdownButtonFormField<String>(
-              value: _selectedFromAccount,
-              decoration: InputDecoration(
-                labelText: 'Select Account',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                prefixIcon: const Icon(Icons.account_balance),
+            _buildSectionHeader(
+                context, 'From Account', Icons.account_balance_outlined),
+            Card(
+              elevation: 2,
+              shadowColor: Colors.grey.withOpacity(0.1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-              items: _accounts.map((account) {
-                return DropdownMenuItem(
-                  value: account,
-                  child: Text(account),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    _selectedFromAccount = value;
-                  });
-                }
-              },
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: DropdownButtonFormField<String>(
+                  value: _selectedFromAccount,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    prefixIcon: Icon(Icons.account_balance),
+                  ),
+                  items: _accounts.map((account) {
+                    return DropdownMenuItem(
+                      value: account,
+                      child: Text(account),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        _selectedFromAccount = value;
+                      });
+                    }
+                  },
+                ),
+              ),
             ),
             const SizedBox(height: 24),
 
             // To Account
-            _buildSectionHeader(context, 'To Account'),
-            DropdownButtonFormField<String>(
-              value: _selectedToAccount,
-              decoration: InputDecoration(
-                labelText: 'Select Recipient Account',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                prefixIcon: const Icon(Icons.account_balance_wallet),
+            _buildSectionHeader(
+                context, 'To Account', Icons.account_balance_wallet_outlined),
+            Card(
+              elevation: 2,
+              shadowColor: Colors.grey.withOpacity(0.1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-              items: _accounts.map((account) {
-                return DropdownMenuItem(
-                  value: account,
-                  child: Text(account),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    _selectedToAccount = value;
-                  });
-                }
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _recipientController,
-              decoration: InputDecoration(
-                labelText: 'Recipient Account Number',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Column(
+                  children: [
+                    DropdownButtonFormField<String>(
+                      value: _selectedToAccount,
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        prefixIcon: Icon(Icons.account_balance_wallet),
+                      ),
+                      items: _accounts.map((account) {
+                        return DropdownMenuItem(
+                          value: account,
+                          child: Text(account),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() {
+                            _selectedToAccount = value;
+                          });
+                        }
+                      },
+                    ),
+                    const Divider(),
+                    TextFormField(
+                      controller: _recipientController,
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        prefixIcon: Icon(Icons.person),
+                        hintText: 'Recipient Account Number',
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter recipient account number';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
                 ),
-                prefixIcon: const Icon(Icons.person),
               ),
-              keyboardType: TextInputType.number,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter recipient account number';
-                }
-                return null;
-              },
             ),
             const SizedBox(height: 24),
 
             // Amount
-            _buildSectionHeader(context, 'Amount'),
-            TextFormField(
-              controller: _amountController,
-              decoration: InputDecoration(
-                labelText: 'Amount (MWK)',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                prefixIcon: const Icon(Icons.attach_money),
+            _buildSectionHeader(context, 'Amount', Icons.attach_money_outlined),
+            Card(
+              elevation: 2,
+              shadowColor: Colors.grey.withOpacity(0.1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-              ],
-              onChanged: (_) => _calculateFee(),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter amount';
-                }
-                final amount = double.tryParse(value);
-                if (amount == null || amount <= 0) {
-                  return 'Please enter a valid amount';
-                }
-                return null;
-              },
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: TextFormField(
+                  controller: _amountController,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    prefixIcon: Icon(Icons.attach_money),
+                    hintText: 'Amount (MWK)',
+                  ),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                  ],
+                  onChanged: (_) => _calculateFee(),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter amount';
+                    }
+                    final amount = double.tryParse(value);
+                    if (amount == null || amount <= 0) {
+                      return 'Please enter a valid amount';
+                    }
+                    return null;
+                  },
+                ),
+              ),
             ),
             const SizedBox(height: 24),
 
             // Transfer Speed
-            _buildSectionHeader(context, 'Transfer Speed'),
-            DropdownButtonFormField<String>(
-              value: _selectedSpeed,
-              decoration: InputDecoration(
-                labelText: 'Select Transfer Speed',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                prefixIcon: const Icon(Icons.speed),
+            _buildSectionHeader(
+                context, 'Transfer Speed', Icons.speed_outlined),
+            Card(
+              elevation: 2,
+              shadowColor: Colors.grey.withOpacity(0.1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-              items: _transferSpeeds.map((speed) {
-                return DropdownMenuItem(
-                  value: speed,
-                  child: Text(speed),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    _selectedSpeed = value;
-                  });
-                  _calculateFee();
-                }
-              },
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: DropdownButtonFormField<String>(
+                  value: _selectedSpeed,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    prefixIcon: Icon(Icons.speed),
+                  ),
+                  items: _transferSpeeds.map((speed) {
+                    return DropdownMenuItem(
+                      value: speed,
+                      child: Text(speed),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        _selectedSpeed = value;
+                      });
+                      _calculateFee();
+                    }
+                  },
+                ),
+              ),
             ),
             const SizedBox(height: 24),
 
             // Note
-            _buildSectionHeader(context, 'Note (Optional)'),
-            TextFormField(
-              controller: _noteController,
-              decoration: InputDecoration(
-                labelText: 'Add a note',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                prefixIcon: const Icon(Icons.note),
+            _buildSectionHeader(
+                context, 'Note (Optional)', Icons.note_outlined),
+            Card(
+              elevation: 2,
+              shadowColor: Colors.grey.withOpacity(0.1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-              maxLines: 2,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: TextFormField(
+                  controller: _noteController,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    prefixIcon: Icon(Icons.note),
+                    hintText: 'Add a note',
+                  ),
+                  maxLines: 2,
+                ),
+              ),
             ),
             const SizedBox(height: 24),
 
             // Fee Summary
-            _buildSectionHeader(context, 'Fee Summary'),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceVariant,
-                borderRadius: BorderRadius.circular(12),
+            _buildSectionHeader(context, 'Fee Summary', Icons.receipt_outlined),
+            Card(
+              elevation: 2,
+              shadowColor: Colors.grey.withOpacity(0.1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-              child: Column(
-                children: [
-                  _buildFeeRow('Transfer Amount', _amountController.text),
-                  _buildFeeRow('Transfer Fee', _fee.toStringAsFixed(2)),
-                  const Divider(),
-                  _buildFeeRow(
-                    'Total Amount',
-                    (double.tryParse(_amountController.text) ?? 0 + _fee)
-                        .toStringAsFixed(2),
-                    isTotal: true,
-                  ),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    _buildFeeRow('Transfer Amount', _amountController.text),
+                    _buildFeeRow('Transfer Fee', _fee.toStringAsFixed(2)),
+                    const Divider(),
+                    _buildFeeRow(
+                      'Total Amount',
+                      (double.tryParse(_amountController.text) ?? 0 + _fee)
+                          .toStringAsFixed(2),
+                      isTotal: true,
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 32),
@@ -249,18 +303,36 @@ class _TransferScreenState extends State<TransferScreen> {
                   ? null
                   : () async {
                       if (_formKey.currentState!.validate()) {
-                        setState(() {
-                          _isLoading = true;
-                        });
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TransferConfirmationScreen(
+                              recipientName: _recipientController.text,
+                              recipientAccount: _selectedToAccount,
+                              amount: double.parse(_amountController.text),
+                              note: _noteController.text,
+                              sourceAccount: _selectedFromAccount,
+                              transferType: _selectedSpeed,
+                            ),
+                          ),
+                        );
 
-                        // Simulate transfer process
-                        await Future.delayed(const Duration(seconds: 2));
-
-                        if (mounted) {
+                        if (result == true && mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Transfer successful!'),
+                            SnackBar(
+                              content: Row(
+                                children: [
+                                  const Icon(Icons.check_circle,
+                                      color: Colors.white),
+                                  const SizedBox(width: 8),
+                                  const Text('Transfer successful!'),
+                                ],
+                              ),
                               backgroundColor: Colors.green,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                             ),
                           );
                           Navigator.pop(context);
@@ -272,6 +344,7 @@ class _TransferScreenState extends State<TransferScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
+                elevation: 2,
               ),
               child: _isLoading
                   ? const SizedBox(
@@ -283,7 +356,10 @@ class _TransferScreenState extends State<TransferScreen> {
                     )
                   : const Text(
                       'Send Money',
-                      style: TextStyle(fontSize: 16),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
             ),
             const SizedBox(height: 16),
@@ -293,15 +369,22 @@ class _TransferScreenState extends State<TransferScreen> {
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title) {
+  Widget _buildSectionHeader(
+      BuildContext context, String title, IconData icon) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Theme.of(context).primaryColor,
-              fontWeight: FontWeight.bold,
-            ),
+      child: Row(
+        children: [
+          Icon(icon, color: Theme.of(context).primaryColor, size: 20),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Theme.of(context).primaryColor,
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+        ],
       ),
     );
   }
@@ -316,12 +399,15 @@ class _TransferScreenState extends State<TransferScreen> {
             label,
             style: TextStyle(
               fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+              color: isTotal ? Colors.black : Colors.grey[600],
             ),
           ),
           Text(
             'MWK $value',
             style: TextStyle(
               fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+              color: isTotal ? Colors.black : Colors.grey[600],
+              fontSize: isTotal ? 16 : 14,
             ),
           ),
         ],

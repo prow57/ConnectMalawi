@@ -418,3 +418,4 @@ class _VerifyAccountScreenState extends State<VerifyAccountScreen> with SingleTi
     }
   }
 }
+ 
