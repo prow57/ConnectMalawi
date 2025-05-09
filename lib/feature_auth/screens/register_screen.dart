@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../../common/widgets/app_button.dart';
+import '../../common/widgets/app_text_field.dart';
+import '../../constants/theme_constants.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -12,20 +15,32 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  bool _usePhone = true;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   void dispose() {
     _nameController.dispose();
-    _phoneController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  void _handleRegister() {
+    if (_formKey.currentState?.validate() ?? false) {
+      context.read<AuthProvider>().register(
+            name: _nameController.text,
+            identifier: _phoneController.text,
+            password: _passwordController.text,
+            isPhone: true,
+          );
+    }
   }
 
   @override
@@ -34,167 +49,192 @@ class _RegisterScreenState extends State<RegisterScreen> {
       appBar: AppBar(
         title: const Text('Register'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Toggle between phone and email
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ChoiceChip(
-                    label: const Text('Phone'),
-                    selected: _usePhone,
-                    onSelected: (selected) {
-                      setState(() {
-                        _usePhone = selected;
-                      });
-                    },
-                  ),
-                  const SizedBox(width: 16),
-                  ChoiceChip(
-                    label: const Text('Email'),
-                    selected: !_usePhone,
-                    onSelected: (selected) {
-                      setState(() {
-                        _usePhone = !selected;
-                      });
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              // Name field
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Full Name',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your name';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              // Phone/Email field
-              if (_usePhone)
-                TextFormField(
-                  controller: _phoneController,
-                  decoration: const InputDecoration(
-                    labelText: 'Phone Number',
-                    border: OutlineInputBorder(),
-                    prefixText: '+265 ',
-                  ),
-                  keyboardType: TextInputType.phone,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your phone number';
-                    }
-                    return null;
-                  },
-                )
-              else
-                TextFormField(
-                  controller: _emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your email';
-                    }
-                    return null;
-                  },
-                ),
-              const SizedBox(height: 16),
-              // Password field
-              TextFormField(
-                controller: _passwordController,
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(),
-                ),
-                obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your password';
-                  }
-                  if (value.length < 6) {
-                    return 'Password must be at least 6 characters';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              // Confirm Password field
-              TextFormField(
-                controller: _confirmPasswordController,
-                decoration: const InputDecoration(
-                  labelText: 'Confirm Password',
-                  border: OutlineInputBorder(),
-                ),
-                obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please confirm your password';
-                  }
-                  if (value != _passwordController.text) {
-                    return 'Passwords do not match';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 24),
-              // Send OTP button
-              ElevatedButton(
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    final authProvider = context.read<AuthProvider>();
-                    try {
-                      await authProvider.sendOTP(
-                        _usePhone ? _phoneController.text : _emailController.text,
-                      );
-                      if (mounted) {
-                        Navigator.pushNamed(
-                          context,
-                          '/verify-otp',
-                          arguments: {
-                            'name': _nameController.text,
-                            'phone': _usePhone ? _phoneController.text : null,
-                            'email': !_usePhone ? _emailController.text : null,
-                            'password': _passwordController.text,
+      body: SafeArea(
+        child: Consumer<AuthProvider>(
+          builder: (context, provider, child) {
+            if (provider.isLoading) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(ThemeConstants.spacingL),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Title
+                    Text(
+                      'Create Account',
+                      style: ThemeConstants.heading1,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: ThemeConstants.spacingM),
+                    Text(
+                      'Sign up to get started',
+                      style: ThemeConstants.body1.copyWith(
+                        color: ThemeConstants.textSecondaryColor,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: ThemeConstants.spacingXL),
+
+                    // Name
+                    AppTextField(
+                      controller: _nameController,
+                      label: 'Full Name',
+                      hint: 'Enter your full name',
+                      prefixIcon: Icons.person,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your name';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: ThemeConstants.spacingM),
+
+                    // Email
+                    AppTextField(
+                      controller: _emailController,
+                      label: 'Email',
+                      hint: 'Enter your email',
+                      prefixIcon: Icons.email,
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your email';
+                        }
+                        if (!value.contains('@')) {
+                          return 'Please enter a valid email';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: ThemeConstants.spacingM),
+
+                    // Phone Number
+                    AppTextField(
+                      controller: _phoneController,
+                      label: 'Phone Number',
+                      hint: '+265 XXXX XXXXX',
+                      prefixIcon: Icons.phone,
+                      keyboardType: TextInputType.phone,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your phone number';
+                        }
+                        // Add phone number validation if needed
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: ThemeConstants.spacingM),
+
+                    // Password
+                    AppTextField(
+                      controller: _passwordController,
+                      label: 'Password',
+                      hint: 'Enter your password',
+                      prefixIcon: Icons.lock,
+                      obscureText: _obscurePassword,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your password';
+                        }
+                        if (value.length < 6) {
+                          return 'Password must be at least 6 characters';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: ThemeConstants.spacingM),
+
+                    // Confirm Password
+                    AppTextField(
+                      controller: _confirmPasswordController,
+                      label: 'Confirm Password',
+                      hint: 'Confirm your password',
+                      prefixIcon: Icons.lock,
+                      obscureText: _obscureConfirmPassword,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureConfirmPassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscureConfirmPassword = !_obscureConfirmPassword;
+                          });
+                        },
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please confirm your password';
+                        }
+                        if (value != _passwordController.text) {
+                          return 'Passwords do not match';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: ThemeConstants.spacingL),
+
+                    // Register Button
+                    AppButton(
+                      text: 'Register',
+                      onPressed: _handleRegister,
+                    ),
+                    const SizedBox(height: ThemeConstants.spacingM),
+
+                    // Login Link
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Already have an account? ',
+                          style: ThemeConstants.body2.copyWith(
+                            color: ThemeConstants.textSecondaryColor,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
                           },
-                        );
-                      }
-                    } catch (e) {
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(e.toString())),
-                        );
-                      }
-                    }
-                  }
-                },
-                child: const Text('Send OTP'),
+                          child: const Text('Login'),
+                        ),
+                      ],
+                    ),
+
+                    if (provider.error != null) ...[
+                      const SizedBox(height: ThemeConstants.spacingM),
+                      Text(
+                        provider.error!,
+                        style: ThemeConstants.body2.copyWith(
+                          color: ThemeConstants.errorColor,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ],
+                ),
               ),
-              const SizedBox(height: 16),
-              // Login link
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text('Already have an account? Login'),
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
