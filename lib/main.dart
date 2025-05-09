@@ -2,24 +2,57 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:nyasa_send/feature_auth/providers/auth_provider.dart';
-import 'package:nyasa_send/feature_auth/services/auth_service.dart';
+import 'feature_auth/providers/auth_provider.dart';
+import 'feature_auth/services/auth_service.dart';
 import 'core/navigation/app_router.dart';
 import 'constants/route_constants.dart';
 import 'constants/app_constants.dart';
 import 'constants/theme_constants.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'feature_dashboard/providers/dashboard_provider.dart';
+import 'feature_dashboard/services/dashboard_service.dart';
+import 'feature_transfer/providers/transfer_provider.dart';
+import 'feature_transfer/services/transfer_service.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  runApp(const MyApp());
+
+  final prefs = await SharedPreferences.getInstance();
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => AuthProvider(
+            AuthService(
+              baseUrl: AppConstants.apiBaseUrl,
+              prefs: prefs,
+            ),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => DashboardProvider(
+            DashboardService(baseUrl: AppConstants.apiBaseUrl),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => TransferProvider(
+            TransferService(baseUrl: AppConstants.apiBaseUrl),
+          ),
+        ),
+      ],
+      child: MyApp(prefs: prefs),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final SharedPreferences prefs;
+
+  const MyApp({super.key, required this.prefs});
 
   @override
   Widget build(BuildContext context) {
@@ -27,8 +60,20 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(
           create: (context) => AuthProvider(
-            authService: AuthService(),
-            secureStorage: const FlutterSecureStorage(),
+            AuthService(
+              baseUrl: AppConstants.apiBaseUrl,
+              prefs: prefs,
+            ),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => DashboardProvider(
+            DashboardService(baseUrl: AppConstants.apiBaseUrl),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => TransferProvider(
+            TransferService(baseUrl: AppConstants.apiBaseUrl),
           ),
         ),
       ],
