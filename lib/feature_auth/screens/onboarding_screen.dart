@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../constants/app_constants.dart';
 import '../../constants/theme_constants.dart';
 import '../../common/widgets/app_button.dart';
-import '../../common/widgets/app_logo.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -17,19 +16,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<OnboardingItem> _items = [
     OnboardingItem(
-      title: 'Low Fees',
-      description: 'Send money with minimal transaction fees across multiple banks',
-      icon: Icons.attach_money,
+      title: 'Seamless Money Transfers',
+      description:
+          'Send and receive money instantly across multiple banks with our secure and fast payment system',
+      icon: Icons.swap_horiz,
     ),
     OnboardingItem(
-      title: 'Multi-Bank Support',
-      description: 'Connect and transfer money between different bank accounts',
-      icon: Icons.account_balance,
+      title: 'Bank Anywhere, Anytime',
+      description:
+          'Access your money and make transactions 24/7 with our user-friendly mobile banking platform',
+      icon: Icons.phone_android,
     ),
     OnboardingItem(
-      title: 'Secure Transactions',
-      description: 'Your money is safe with our advanced security features',
-      icon: Icons.security,
+      title: 'Secure & Protected',
+      description:
+          'Your security is our priority. Enjoy peace of mind with our advanced encryption and fraud protection',
+      icon: Icons.shield,
     ),
   ];
 
@@ -39,19 +41,41 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.dispose();
   }
 
+  Widget _buildLogo() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: ThemeConstants.primaryColor.withOpacity(0.1),
+        shape: BoxShape.circle,
+      ),
+      child: const Icon(
+        Icons.account_balance_wallet,
+        size: 40,
+        color: ThemeConstants.primaryColor,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
-            Align(
-              alignment: Alignment.topRight,
-              child: TextButton(
-                onPressed: () {
-                  Navigator.pushReplacementNamed(context, AppConstants.routeLogin);
-                },
-                child: const Text('Skip'),
+            Padding(
+              padding: const EdgeInsets.all(ThemeConstants.spacingL),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildLogo(),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushReplacementNamed(
+                          context, AppConstants.routeLogin);
+                    },
+                    child: const Text('Skip'),
+                  ),
+                ],
               ),
             ),
             Expanded(
@@ -70,15 +94,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          item.icon,
-                          size: 120,
-                          color: ThemeConstants.primaryColor,
+                        Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: ThemeConstants.primaryColor.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            item.icon,
+                            size: 80,
+                            color: ThemeConstants.primaryColor,
+                          ),
                         ),
                         const SizedBox(height: ThemeConstants.spacingXL),
                         Text(
                           item.title,
-                          style: ThemeConstants.heading2,
+                          style: ThemeConstants.heading2.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: ThemeConstants.spacingM),
@@ -86,6 +119,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           item.description,
                           style: ThemeConstants.body1.copyWith(
                             color: ThemeConstants.textSecondaryColor,
+                            height: 1.5,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -118,7 +152,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             Padding(
               padding: const EdgeInsets.all(ThemeConstants.spacingL),
               child: AppButton(
-                text: _currentPage == _items.length - 1 ? 'Get Started' : 'Next',
+                text:
+                    _currentPage == _items.length - 1 ? 'Get Started' : 'Next',
                 onPressed: () {
                   if (_currentPage == _items.length - 1) {
                     Navigator.pushReplacementNamed(
