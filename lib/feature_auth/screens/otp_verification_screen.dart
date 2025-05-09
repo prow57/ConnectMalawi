@@ -108,14 +108,16 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
           );
         }
       } else {
-        await authProvider.verifyRegistrationOTP(
-          widget.phone ?? widget.email!,
-          otp,
+        await authProvider.verifyOTP(
+          identifier: widget.phone ?? widget.email!,
+          otp: otp,
+          isPhone: widget.phone != null,
         );
         await authProvider.register(
-          widget.name,
-          widget.phone ?? widget.email!,
-          widget.password!,
+          name: widget.name,
+          identifier: widget.phone ?? widget.email!,
+          password: widget.password!,
+          isPhone: widget.phone != null,
         );
         if (mounted) {
           Navigator.pushReplacementNamed(context, '/home');
@@ -179,7 +181,9 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                         final authProvider = context.read<AuthProvider>();
                         try {
                           await authProvider.sendOTP(
-                            widget.phone ?? widget.email!,
+                            identifier: widget.phone ?? widget.email!,
+                            isPhone: widget.phone != null,
+                            isPasswordReset: widget.isPasswordReset,
                           );
                           _startResendTimer();
                         } catch (e) {
@@ -203,4 +207,4 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
       ),
     );
   }
-} 
+}
