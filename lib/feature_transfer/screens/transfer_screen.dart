@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'transfer_confirmation_screen.dart';
+import 'package:provider/provider.dart';
+import '../providers/transfer_provider.dart';
+import '../functions/transfer_functions.dart';
+import '../../common/widgets/app_button.dart';
+import '../../common/widgets/app_text_field.dart';
+import '../../constants/theme_constants.dart';
 
 class TransferScreen extends StatefulWidget {
   const TransferScreen({super.key});
@@ -11,406 +15,215 @@ class TransferScreen extends StatefulWidget {
 
 class _TransferScreenState extends State<TransferScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _phoneController = TextEditingController();
   final _amountController = TextEditingController();
-  final _recipientController = TextEditingController();
-  final _noteController = TextEditingController();
-
-  String _selectedFromAccount = 'Standard Bank';
-  String _selectedToAccount = 'Airtel Money';
-  String _selectedSpeed = 'Instant';
-  double _fee = 0.0;
-  bool _isLoading = false;
-
-  final List<String> _accounts = [
-    'Standard Bank',
-    'National Bank',
-    'Airtel Money',
-    'TNM Mpamba',
-    'Ecobank',
-  ];
-
-  final List<String> _transferSpeeds = [
-    'Instant',
-    'Standard (1-2 hours)',
-    'Economy (24 hours)',
-  ];
+  final _descriptionController = TextEditingController();
 
   @override
   void dispose() {
+    _phoneController.dispose();
     _amountController.dispose();
-    _recipientController.dispose();
-    _noteController.dispose();
+    _descriptionController.dispose();
     super.dispose();
   }
 
-  void _calculateFee() {
-    final amount = double.tryParse(_amountController.text) ?? 0;
-    if (amount > 0) {
-      setState(() {
-        switch (_selectedSpeed) {
-          case 'Instant':
-            _fee = amount * 0.02;
-            break;
-          case 'Standard (1-2 hours)':
-            _fee = amount * 0.015;
-            break;
-          case 'Economy (24 hours)':
-            _fee = amount * 0.01;
-            break;
-        }
-      });
+  void _handleTransfer() {
+    if (_formKey.currentState?.validate() ?? false) {
+      final amount = double.parse(_amountController.text);
+      final fee = double.parse(TransferFunctions.getTransferFee(amount));
+      final total = amount + fee;
+
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Confirm Transfer'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Recipient: ${_phoneController.text}'),
+              const SizedBox(height: ThemeConstants.spacingS),
+              Text('Amount: ${TransferFunctions.formatCurrency(amount)}'),
+              const SizedBox(height: ThemeConstants.spacingS),
+              Text('Fee: ${TransferFunctions.formatCurrency(fee)}'),
+              const SizedBox(height: ThemeConstants.spacingS),
+              Text(
+                'Total: ${TransferFunctions.formatCurrency(total)}',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                context.read<TransferProvider>().transfer(
+                      recipientPhone: _phoneController.text,
+                      amount: amount,
+                      description: _descriptionController.text,
+                    );
+              },
+              child: const Text('Confirm'),
+            ),
+          ],
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Send Money'),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        foregroundColor: theme.primaryColor,
+        title: const Text('Transfer Money'),
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            // From Account
-            _buildSectionHeader(
-                context, 'From Account', Icons.account_balance_outlined),
-            Card(
-              elevation: 2,
-              shadowColor: Colors.grey.withOpacity(0.1),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: DropdownButtonFormField<String>(
-                  value: _selectedFromAccount,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    prefixIcon: Icon(Icons.account_balance),
-                  ),
-                  items: _accounts.map((account) {
-                    return DropdownMenuItem(
-                      value: account,
-                      child: Text(account),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() {
-                        _selectedFromAccount = value;
-                      });
-                    }
-                  },
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
+      body: Consumer<TransferProvider>(
+        builder: (context, provider, child) {
+          if (provider.isLoading) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
 
-            // To Account
-            _buildSectionHeader(
-                context, 'To Account', Icons.account_balance_wallet_outlined),
-            Card(
-              elevation: 2,
-              shadowColor: Colors.grey.withOpacity(0.1),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Column(
-                  children: [
-                    DropdownButtonFormField<String>(
-                      value: _selectedToAccount,
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        prefixIcon: Icon(Icons.account_balance_wallet),
-                      ),
-                      items: _accounts.map((account) {
-                        return DropdownMenuItem(
-                          value: account,
-                          child: Text(account),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        if (value != null) {
-                          setState(() {
-                            _selectedToAccount = value;
-                          });
-                        }
-                      },
+          if (provider.error != null) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Error: ${provider.error}',
+                    style: ThemeConstants.body1.copyWith(
+                      color: Colors.red,
                     ),
-                    const Divider(),
-                    TextFormField(
-                      controller: _recipientController,
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        prefixIcon: Icon(Icons.person),
-                        hintText: 'Recipient Account Number',
-                      ),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter recipient account number';
-                        }
-                        return null;
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Amount
-            _buildSectionHeader(context, 'Amount', Icons.attach_money_outlined),
-            Card(
-              elevation: 2,
-              shadowColor: Colors.grey.withOpacity(0.1),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: TextFormField(
-                  controller: _amountController,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    prefixIcon: Icon(Icons.attach_money),
-                    hintText: 'Amount (MWK)',
+                    textAlign: TextAlign.center,
                   ),
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                  ],
-                  onChanged: (_) => _calculateFee(),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter amount';
-                    }
-                    final amount = double.tryParse(value);
-                    if (amount == null || amount <= 0) {
-                      return 'Please enter a valid amount';
-                    }
-                    return null;
-                  },
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Transfer Speed
-            _buildSectionHeader(
-                context, 'Transfer Speed', Icons.speed_outlined),
-            Card(
-              elevation: 2,
-              shadowColor: Colors.grey.withOpacity(0.1),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: DropdownButtonFormField<String>(
-                  value: _selectedSpeed,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    prefixIcon: Icon(Icons.speed),
-                  ),
-                  items: _transferSpeeds.map((speed) {
-                    return DropdownMenuItem(
-                      value: speed,
-                      child: Text(speed),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() {
-                        _selectedSpeed = value;
-                      });
-                      _calculateFee();
-                    }
-                  },
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Note
-            _buildSectionHeader(
-                context, 'Note (Optional)', Icons.note_outlined),
-            Card(
-              elevation: 2,
-              shadowColor: Colors.grey.withOpacity(0.1),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: TextFormField(
-                  controller: _noteController,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    prefixIcon: Icon(Icons.note),
-                    hintText: 'Add a note',
-                  ),
-                  maxLines: 2,
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Fee Summary
-            _buildSectionHeader(context, 'Fee Summary', Icons.receipt_outlined),
-            Card(
-              elevation: 2,
-              shadowColor: Colors.grey.withOpacity(0.1),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    _buildFeeRow('Transfer Amount', _amountController.text),
-                    _buildFeeRow('Transfer Fee', _fee.toStringAsFixed(2)),
-                    const Divider(),
-                    _buildFeeRow(
-                      'Total Amount',
-                      (double.tryParse(_amountController.text) ?? 0 + _fee)
-                          .toStringAsFixed(2),
-                      isTotal: true,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 32),
-
-            // Send Button
-            ElevatedButton(
-              onPressed: _isLoading
-                  ? null
-                  : () async {
-                      if (_formKey.currentState!.validate()) {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => TransferConfirmationScreen(
-                              recipientName: _recipientController.text,
-                              recipientAccount: _selectedToAccount,
-                              amount: double.parse(_amountController.text),
-                              note: _noteController.text,
-                              sourceAccount: _selectedFromAccount,
-                              transferType: _selectedSpeed,
-                            ),
-                          ),
-                        );
-
-                        if (result == true && mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Row(
-                                children: [
-                                  const Icon(Icons.check_circle,
-                                      color: Colors.white),
-                                  const SizedBox(width: 8),
-                                  const Text('Transfer successful!'),
-                                ],
-                              ),
-                              backgroundColor: Colors.green,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                          );
-                          Navigator.pop(context);
-                        }
-                      }
+                  const SizedBox(height: ThemeConstants.spacingM),
+                  ElevatedButton(
+                    onPressed: () {
+                      // Clear error and retry
+                      provider.transfer(
+                        recipientPhone: _phoneController.text,
+                        amount: double.parse(_amountController.text),
+                        description: _descriptionController.text,
+                      );
                     },
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 2,
+                    child: const Text('Retry'),
+                  ),
+                ],
               ),
-              child: _isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
+            );
+          }
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(ThemeConstants.spacingM),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Balance Card
+                  Container(
+                    padding: const EdgeInsets.all(ThemeConstants.spacingL),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          ThemeConstants.primaryColor,
+                          ThemeConstants.primaryColor.withOpacity(0.8),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                    )
-                  : const Text(
-                      'Send Money',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-    );
-  }
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Available Balance',
+                          style: ThemeConstants.body2.copyWith(
+                            color: Colors.white.withOpacity(0.8),
+                          ),
+                        ),
+                        const SizedBox(height: ThemeConstants.spacingS),
+                        Text(
+                          TransferFunctions.formatCurrency(
+                              provider.currentBalance),
+                          style: ThemeConstants.heading1.copyWith(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: ThemeConstants.spacingL),
 
-  Widget _buildSectionHeader(
-      BuildContext context, String title, IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
-          Icon(icon, color: Theme.of(context).primaryColor, size: 20),
-          const SizedBox(width: 8),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Theme.of(context).primaryColor,
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-        ],
-      ),
-    );
-  }
+                  // Transfer Form
+                  AppTextField(
+                    controller: _phoneController,
+                    label: 'Recipient Phone Number',
+                    hint: '+265 XXXX XXXXX',
+                    prefixIcon: Icons.phone,
+                    keyboardType: TextInputType.phone,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter recipient phone number';
+                      }
+                      if (!TransferFunctions.isValidPhoneNumber(value)) {
+                        return 'Please enter a valid phone number';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: ThemeConstants.spacingM),
 
-  Widget _buildFeeRow(String label, String value, {bool isTotal = false}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-              color: isTotal ? Colors.black : Colors.grey[600],
+                  AppTextField(
+                    controller: _amountController,
+                    label: 'Amount',
+                    hint: '0.00',
+                    prefixIcon: Icons.attach_money,
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter amount';
+                      }
+                      final amount = double.tryParse(value);
+                      if (amount == null ||
+                          !TransferFunctions.isValidAmount(amount)) {
+                        return 'Please enter a valid amount';
+                      }
+                      if (amount > provider.currentBalance) {
+                        return 'Insufficient balance';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: ThemeConstants.spacingM),
+
+                  AppTextField(
+                    controller: _descriptionController,
+                    label: 'Description (Optional)',
+                    hint: 'Enter transfer description',
+                    prefixIcon: Icons.description,
+                    maxLines: 2,
+                  ),
+                  const SizedBox(height: ThemeConstants.spacingL),
+
+                  // Transfer Button
+                  AppButton(
+                    text: 'Transfer',
+                    onPressed: _handleTransfer,
+                  ),
+                ],
+              ),
             ),
-          ),
-          Text(
-            'MWK $value',
-            style: TextStyle(
-              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-              color: isTotal ? Colors.black : Colors.grey[600],
-              fontSize: isTotal ? 16 : 14,
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
