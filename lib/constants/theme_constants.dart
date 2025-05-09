@@ -33,12 +33,17 @@ class ThemeConstants {
 
   static const TextStyle body1 = TextStyle(
     fontSize: 16,
-    color: textPrimaryColor,
+    fontWeight: FontWeight.normal,
   );
 
   static const TextStyle body2 = TextStyle(
     fontSize: 14,
-    color: textSecondaryColor,
+    fontWeight: FontWeight.normal,
+  );
+
+  static const TextStyle caption = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.normal,
   );
 
   // Spacing
