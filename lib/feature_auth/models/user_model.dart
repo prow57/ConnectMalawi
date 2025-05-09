@@ -2,7 +2,9 @@ class UserModel {
   final String id;
   final String name;
   final String email;
-  final String? profilePicture;
+  final String phone;
+  final bool isVerified;
+  final String? profileImage;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -10,7 +12,9 @@ class UserModel {
     required this.id,
     required this.name,
     required this.email,
-    this.profilePicture,
+    required this.phone,
+    required this.isVerified,
+    this.profileImage,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -20,9 +24,11 @@ class UserModel {
       id: json['id'] as String,
       name: json['name'] as String,
       email: json['email'] as String,
-      profilePicture: json['profilePicture'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      phone: json['phone'] as String,
+      isVerified: json['is_verified'] as bool,
+      profileImage: json['profile_image'] as String?,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: DateTime.parse(json['updated_at'] as String),
     );
   }
 
@@ -31,9 +37,33 @@ class UserModel {
       'id': id,
       'name': name,
       'email': email,
-      'profilePicture': profilePicture,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
+      'phone': phone,
+      'is_verified': isVerified,
+      'profile_image': profileImage,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
     };
+  }
+
+  UserModel copyWith({
+    String? id,
+    String? name,
+    String? email,
+    String? phone,
+    bool? isVerified,
+    String? profileImage,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return UserModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      phone: phone ?? this.phone,
+      isVerified: isVerified ?? this.isVerified,
+      profileImage: profileImage ?? this.profileImage,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
   }
 }
