@@ -1,49 +1,38 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../../constants/theme_constants.dart';
 
 class AppTextField extends StatelessWidget {
-  final TextEditingController? controller;
-  final String? label;
+  final TextEditingController controller;
+  final String label;
   final String? hint;
-  final String? errorText;
-  final bool obscureText;
-  final TextInputType? keyboardType;
-  final TextInputAction? textInputAction;
-  final Widget? prefixIcon;
+  final IconData? prefixIcon;
   final Widget? suffixIcon;
+  final bool obscureText;
+  final TextInputType keyboardType;
   final String? Function(String?)? validator;
   final void Function(String)? onChanged;
-  final List<TextInputFormatter>? inputFormatters;
   final int? maxLines;
   final int? maxLength;
   final bool enabled;
-  final FocusNode? focusNode;
-  final void Function()? onTap;
-  final bool readOnly;
-  final EdgeInsetsGeometry? contentPadding;
+  final String? prefixText;
+  final String? errorText;
 
   const AppTextField({
     super.key,
-    this.controller,
-    this.label,
+    required this.controller,
+    required this.label,
     this.hint,
-    this.errorText,
-    this.obscureText = false,
-    this.keyboardType,
-    this.textInputAction,
     this.prefixIcon,
     this.suffixIcon,
+    this.obscureText = false,
+    this.keyboardType = TextInputType.text,
     this.validator,
     this.onChanged,
-    this.inputFormatters,
     this.maxLines = 1,
     this.maxLength,
     this.enabled = true,
-    this.focusNode,
-    this.onTap,
-    this.readOnly = false,
-    this.contentPadding,
+    this.prefixText,
+    this.errorText,
   });
 
   @override
@@ -52,62 +41,57 @@ class AppTextField extends StatelessWidget {
       controller: controller,
       obscureText: obscureText,
       keyboardType: keyboardType,
-      textInputAction: textInputAction,
       validator: validator,
       onChanged: onChanged,
-      inputFormatters: inputFormatters,
       maxLines: maxLines,
       maxLength: maxLength,
       enabled: enabled,
-      focusNode: focusNode,
-      onTap: onTap,
-      readOnly: readOnly,
       style: ThemeConstants.body1,
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        errorText: errorText,
-        prefixIcon: prefixIcon,
+        prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
         suffixIcon: suffixIcon,
-        contentPadding: contentPadding ??
-            const EdgeInsets.symmetric(
-              horizontal: ThemeConstants.spacingM,
-              vertical: ThemeConstants.spacingM,
-            ),
+        prefixText: prefixText,
+        errorText: errorText,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusM),
-          borderSide: const BorderSide(
-            color: ThemeConstants.textSecondaryColor,
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: ThemeConstants.textSecondaryColor.withOpacity(0.3),
           ),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusM),
-          borderSide: const BorderSide(
-            color: ThemeConstants.textSecondaryColor,
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: ThemeConstants.textSecondaryColor.withOpacity(0.3),
           ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusM),
-          borderSide: const BorderSide(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
             color: ThemeConstants.primaryColor,
           ),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusM),
+          borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(
-            color: ThemeConstants.errorColor,
+            color: Colors.red,
           ),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusM),
+          borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(
-            color: ThemeConstants.errorColor,
+            color: Colors.red,
           ),
         ),
         filled: true,
         fillColor: enabled
-            ? ThemeConstants.surfaceColor
-            : ThemeConstants.backgroundColor,
+            ? Colors.white
+            : ThemeConstants.textSecondaryColor.withOpacity(0.1),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: ThemeConstants.spacingM,
+          vertical: ThemeConstants.spacingM,
+        ),
       ),
     );
   }
