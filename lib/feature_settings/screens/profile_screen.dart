@@ -143,7 +143,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 icon: const Icon(Icons.verified_user),
                                 label: const Text('Complete KYC Verification'),
                                 style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12),
                                 ),
                               ),
                             ),
@@ -200,7 +201,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     title: 'Change Password',
                     icon: Icons.lock_outline,
                     onTap: () {
-                      Navigator.pushNamed(context, RouteConstants.changePassword);
+                      Navigator.pushNamed(
+                          context, RouteConstants.changePassword);
                     },
                   ),
                   const SizedBox(height: 12),
@@ -208,7 +210,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     title: 'Security Settings',
                     icon: Icons.security_outlined,
                     onTap: () {
-                      Navigator.pushNamed(context, RouteConstants.securitySettings);
+                      Navigator.pushNamed(
+                          context, RouteConstants.securitySettings);
                     },
                   ),
                 ],
