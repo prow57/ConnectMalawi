@@ -94,9 +94,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     final authProvider = context.read<AuthProvider>();
                     try {
                       await authProvider.resetPassword(
-                        widget.phone ?? widget.email!,
-                        widget.otp,
-                        _passwordController.text,
+                        identifier: widget.phone ?? widget.email!,
+                        otp: widget.otp,
+                        newPassword: _passwordController.text,
+                        isPhone: widget.phone != null,
                       );
                       if (mounted) {
                         Navigator.pushReplacementNamed(context, '/login');
