@@ -16,7 +16,32 @@ class _RequestMoneyScreenState extends State<RequestMoneyScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
-  String _selectedRecipient = 'John Doe';
+  String _selectedAccount = 'Standard Bank';
+  String _selectedRecipient = '';
+
+  final List<String> _accounts = [
+    'Standard Bank',
+    'Airtel Money',
+    'TNM Mpamba',
+  ];
+
+  final List<Map<String, dynamic>> _recentRecipients = [
+    {
+      'name': 'John Doe',
+      'phone': '0999123456',
+      'type': 'Airtel Money',
+    },
+    {
+      'name': 'Jane Smith',
+      'phone': '0888123456',
+      'type': 'TNM Mpamba',
+    },
+    {
+      'name': 'Mike Johnson',
+      'phone': 'Standard Bank - 1234567890',
+      'type': 'Bank Account',
+    },
+  ];
 
   @override
   void dispose() {
@@ -31,108 +56,22 @@ class _RequestMoneyScreenState extends State<RequestMoneyScreen> {
       appBar: AppBar(
         title: const Text('Request Money'),
       ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(ThemeConstants.spacingL),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Recipient Selection
-              Text(
-                'Request From',
-                style: ThemeConstants.heading3,
-              ),
-              const SizedBox(height: ThemeConstants.spacingM),
-              Container(
-                padding: const EdgeInsets.all(ThemeConstants.spacingM),
-                decoration: BoxDecoration(
-                  color: ThemeConstants.surfaceColor,
-                  borderRadius: BorderRadius.circular(
-                    ThemeConstants.borderRadiusM,
-                  ),
-                  boxShadow: ThemeConstants.cardShadow,
-                ),
-                child: Column(
-                  children: [
-                    _buildRecipientTile(),
-                  ],
-                ),
-              ),
-              const SizedBox(height: ThemeConstants.spacingXL),
-              // Amount Input
-              Text(
-                'Amount',
-                style: ThemeConstants.heading3,
-              ),
-              const SizedBox(height: ThemeConstants.spacingM),
-              AppTextField(
-                label: 'Enter Amount',
-                controller: _amountController,
-                keyboardType: TextInputType.number,
-                prefixIcon: const Text(
-                  'MK',
-                  style: TextStyle(
-                    color: ThemeConstants.textSecondaryColor,
-                  ),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter an amount';
-                  }
-                  final amount = double.tryParse(value);
-                  if (amount == null) {
-                    return 'Please enter a valid amount';
-                  }
-                  if (amount <= 0) {
-                    return 'Amount must be greater than 0';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: ThemeConstants.spacingXL),
-              // Note Input
-              AppTextField(
-                label: 'Note (Optional)',
-                controller: _noteController,
-                maxLines: 3,
-              ),
-              const SizedBox(height: ThemeConstants.spacingXL),
-              // Request Details
-              Container(
-                padding: const EdgeInsets.all(ThemeConstants.spacingM),
-                decoration: BoxDecoration(
-                  color: ThemeConstants.surfaceColor,
-                  borderRadius: BorderRadius.circular(
-                    ThemeConstants.borderRadiusM,
-                  ),
-                  boxShadow: ThemeConstants.cardShadow,
-                ),
-                child: Column(
-                  children: [
-                    _buildRequestDetail(
-                      'Request Amount',
-                      Formatters.formatCurrency(500.00),
-                    ),
-                    const Divider(),
-                    _buildRequestDetail(
-                      'Status',
-                      'Pending',
-                      isStatus: true,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: ThemeConstants.spacingXL),
-              // Request Button
-              AppButton(
-                text: 'Send Request',
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    // TODO: Process request
-                  }
-                },
-              ),
+              _buildAccountSelection(),
+              const SizedBox(height: 24),
+              _buildAmountInput(),
+              const SizedBox(height: 24),
+              _buildRecentRecipients(),
+              const SizedBox(height: 24),
+              _buildNoteInput(),
+              const SizedBox(height: 24),
+              _buildRequestButton(),
             ],
           ),
         ),
@@ -140,55 +79,204 @@ class _RequestMoneyScreenState extends State<RequestMoneyScreen> {
     );
   }
 
-  Widget _buildRecipientTile() {
-    return ListTile(
-      title: const Text('Recipient'),
-      subtitle: Text(
-        _selectedRecipient ?? 'Select recipient',
-        style: ThemeConstants.body2,
-      ),
-      trailing: const Icon(Icons.arrow_forward_ios),
-      onTap: () async {
-        final result = await Navigator.pushNamed(
-          context,
-          AppConstants.routeRecipients,
-        );
-        if (result != null) {
-          setState(() {
-            _selectedRecipient = result as String;
-          });
-        }
-      },
+  Widget _buildAccountSelection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Select Account',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          value: _selectedAccount,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            prefixIcon: const Icon(Icons.account_balance),
+          ),
+          items: _accounts.map((account) {
+            return DropdownMenuItem(
+              value: account,
+              child: Text(account),
+            );
+          }).toList(),
+          onChanged: (value) {
+            if (value != null) {
+              setState(() {
+                _selectedAccount = value;
+              });
+            }
+          },
+        ),
+      ],
     );
   }
 
-  Widget _buildRequestDetail(
-    String label,
-    String value, {
-    bool isStatus = false,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        vertical: ThemeConstants.spacingS,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: ThemeConstants.body1.copyWith(
-              color: ThemeConstants.textSecondaryColor,
-            ),
+  Widget _buildAmountInput() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Amount',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
           ),
-          Text(
-            value,
-            style: ThemeConstants.body1.copyWith(
-              fontWeight: isStatus ? FontWeight.bold : FontWeight.normal,
-              color: isStatus ? ThemeConstants.primaryColor : null,
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _amountController,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
+            prefixText: 'MWK ',
+            hintText: '0.00',
           ),
-        ],
+          keyboardType: TextInputType.number,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter amount';
+            }
+            if (double.tryParse(value) == null) {
+              return 'Please enter a valid amount';
+            }
+            return null;
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRecentRecipients() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Recent Recipients',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _recentRecipients.length,
+          itemBuilder: (context, index) {
+            final recipient = _recentRecipients[index];
+            return Card(
+              margin: const EdgeInsets.only(bottom: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ListTile(
+                leading: CircleAvatar(
+                  backgroundColor:
+                      Theme.of(context).primaryColor.withOpacity(0.1),
+                  child: Text(
+                    recipient['name'][0],
+                    style: TextStyle(
+                      color: Theme.of(context).primaryColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                title: Text(recipient['name']),
+                subtitle: Text(recipient['phone']),
+                trailing: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    recipient['type'],
+                    style: TextStyle(
+                      color: Theme.of(context).primaryColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                onTap: () {
+                  setState(() {
+                    _selectedRecipient = recipient['name'];
+                  });
+                },
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNoteInput() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Note (Optional)',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _noteController,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            hintText: 'Add a note to your request',
+          ),
+          maxLines: 2,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRequestButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: _submitRequest,
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: const Text(
+          'Generate Request Link',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
     );
+  }
+
+  void _submitRequest() {
+    if (_formKey.currentState!.validate()) {
+      // TODO: Implement request money functionality
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Request link generated successfully'),
+        ),
+      );
+    }
   }
 }
