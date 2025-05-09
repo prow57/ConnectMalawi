@@ -3,67 +3,74 @@ import '../../constants/theme_constants.dart';
 
 class AppButton extends StatelessWidget {
   final String text;
-  final VoidCallback? onPressed;
+  final VoidCallback onPressed;
   final bool isLoading;
-  final bool isFullWidth;
+  final bool isOutlined;
   final Color? backgroundColor;
   final Color? textColor;
   final double? width;
-  final double height;
-  final double borderRadius;
-  final EdgeInsetsGeometry? padding;
+  final double? height;
 
   const AppButton({
     super.key,
     required this.text,
-    this.onPressed,
+    required this.onPressed,
     this.isLoading = false,
-    this.isFullWidth = true,
+    this.isOutlined = false,
     this.backgroundColor,
     this.textColor,
     this.width,
-    this.height = 48.0,
-    this.borderRadius = 8.0,
-    this.padding,
+    this.height,
   });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: isFullWidth ? double.infinity : width,
-      height: height,
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? ThemeConstants.primaryColor,
-          foregroundColor: textColor ?? Colors.white,
-          padding: padding ??
-              const EdgeInsets.symmetric(
-                horizontal: ThemeConstants.spacingL,
-                vertical: ThemeConstants.spacingM,
-              ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(borderRadius),
-          ),
-          elevation: 0,
-        ),
-        child: isLoading
-            ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+      width: width ?? double.infinity,
+      height: height ?? 50,
+      child: isOutlined
+          ? OutlinedButton(
+              onPressed: isLoading ? null : onPressed,
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(
+                  color: backgroundColor ?? ThemeConstants.primaryColor,
                 ),
-              )
-            : Text(
-                text,
-                style: ThemeConstants.body1.copyWith(
-                  color: textColor ?? Colors.white,
-                  fontWeight: FontWeight.bold,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
-      ),
+              child: _buildChild(),
+            )
+          : ElevatedButton(
+              onPressed: isLoading ? null : onPressed,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: backgroundColor ?? ThemeConstants.primaryColor,
+                foregroundColor: textColor ?? Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: _buildChild(),
+            ),
     );
+  }
+
+  Widget _buildChild() {
+    return isLoading
+        ? const SizedBox(
+            height: 20,
+            width: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          )
+        : Text(
+            text,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          );
   }
 }
