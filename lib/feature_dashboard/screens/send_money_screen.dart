@@ -71,12 +71,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                 label: 'Enter Amount',
                 controller: _amountController,
                 keyboardType: TextInputType.number,
-                prefixIcon: const Text(
-                  'MK',
-                  style: TextStyle(
-                    color: ThemeConstants.textSecondaryColor,
-                  ),
-                ),
+                prefixText: 'MK ',
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter an amount';
