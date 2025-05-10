@@ -32,9 +32,34 @@ class _TransferScreenState extends State<TransferScreen> {
     try {
       final status = await Permission.contacts.request();
       if (status.isGranted) {
-        final Contact? contact = await ContactsService.openContacts();
+        final contacts = await ContactsService.getContacts();
+        if (!mounted) return;
+
+        final Contact? contact = await showDialog<Contact>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Select Contact'),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: contacts.length,
+                itemBuilder: (context, index) {
+                  final contact = contacts.elementAt(index);
+                  return ListTile(
+                    title: Text(contact.displayName ?? ''),
+                    subtitle: contact.phones?.isNotEmpty == true
+                        ? Text(contact.phones!.first.value ?? '')
+                        : null,
+                    onTap: () => Navigator.pop(context, contact),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+
         if (contact != null && mounted) {
-          // Get the first phone number if available
           final phoneNumber = contact.phones?.isNotEmpty == true
               ? contact.phones!.first.value
               : null;
