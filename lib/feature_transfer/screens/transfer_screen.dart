@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/transfer_provider.dart';
-import '../functions/transfer_functions.dart';
-import '../../common/widgets/app_button.dart';
-import '../../common/widgets/app_text_field.dart';
-import '../../constants/theme_constants.dart';
+import '../../../constants/theme_constants.dart';
 
 class TransferScreen extends StatefulWidget {
   const TransferScreen({super.key});
@@ -15,65 +13,53 @@ class TransferScreen extends StatefulWidget {
 
 class _TransferScreenState extends State<TransferScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _phoneController = TextEditingController();
   final _amountController = TextEditingController();
+  final _recipientController = TextEditingController();
   final _descriptionController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
-    _phoneController.dispose();
     _amountController.dispose();
+    _recipientController.dispose();
     _descriptionController.dispose();
     super.dispose();
   }
 
-  void _handleTransfer() {
-    if (_formKey.currentState?.validate() ?? false) {
-      final amount = double.parse(_amountController.text);
-      final fee = double.parse(TransferFunctions.getTransferFee(amount));
-      final total = amount + fee;
+  Future<void> _handleTransfer() async {
+    if (!_formKey.currentState!.validate()) return;
 
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Confirm Transfer'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Recipient: ${_phoneController.text}'),
-              const SizedBox(height: ThemeConstants.spacingS),
-              Text('Amount: ${TransferFunctions.formatCurrency(amount)}'),
-              const SizedBox(height: ThemeConstants.spacingS),
-              Text('Fee: ${TransferFunctions.formatCurrency(fee)}'),
-              const SizedBox(height: ThemeConstants.spacingS),
-              Text(
-                'Total: ${TransferFunctions.formatCurrency(total)}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
+    setState(() => _isLoading = true);
+
+    try {
+      await context.read<TransferProvider>().transfer(
+            amount: double.parse(_amountController.text),
+            recipientPhone: _recipientController.text,
+            description: _descriptionController.text,
+          );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Transfer successful!'),
+            backgroundColor: Colors.green,
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                context.read<TransferProvider>().transfer(
-                      recipientPhone: _phoneController.text,
-                      amount: amount,
-                      description: _descriptionController.text,
-                    );
-              },
-              child: const Text('Confirm'),
-            ),
-          ],
-        ),
-      );
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -81,149 +67,173 @@ class _TransferScreenState extends State<TransferScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Transfer Money'),
+        title: const Text('Send Money'),
+        elevation: 0,
       ),
-      body: Consumer<TransferProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          if (provider.error != null) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Error: ${provider.error}',
-                    style: ThemeConstants.body1.copyWith(
-                      color: Colors.red,
-                    ),
-                    textAlign: TextAlign.center,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(ThemeConstants.spacingL),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Amount Section
+                Text(
+                  'Amount',
+                  style: ThemeConstants.heading3.copyWith(
+                    color: ThemeConstants.textPrimaryColor,
                   ),
-                  const SizedBox(height: ThemeConstants.spacingM),
-                  ElevatedButton(
-                    onPressed: () {
-                      // Clear error and retry
-                      provider.transfer(
-                        recipientPhone: _phoneController.text,
-                        amount: double.parse(_amountController.text),
-                        description: _descriptionController.text,
-                      );
-                    },
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(ThemeConstants.spacingM),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Balance Card
-                  Container(
-                    padding: const EdgeInsets.all(ThemeConstants.spacingL),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          ThemeConstants.primaryColor,
-                          ThemeConstants.primaryColor.withOpacity(0.8),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
+                ),
+                const SizedBox(height: ThemeConstants.spacingS),
+                TextFormField(
+                  controller: _amountController,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                        RegExp(r'^\d*\.?\d{0,2}')),
+                  ],
+                  decoration: InputDecoration(
+                    prefixText: 'MK ',
+                    hintText: '0.00',
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.attach_money),
+                      onPressed: () {
+                        // TODO: Show currency selector
+                      },
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Available Balance',
-                          style: ThemeConstants.body2.copyWith(
-                            color: Colors.white.withOpacity(0.8),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter an amount';
+                    }
+                    final amount = double.tryParse(value);
+                    if (amount == null || amount <= 0) {
+                      return 'Please enter a valid amount';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: ThemeConstants.spacingL),
+
+                // Recipient Section
+                Text(
+                  'Recipient',
+                  style: ThemeConstants.heading3.copyWith(
+                    color: ThemeConstants.textPrimaryColor,
+                  ),
+                ),
+                const SizedBox(height: ThemeConstants.spacingS),
+                TextFormField(
+                  controller: _recipientController,
+                  decoration: InputDecoration(
+                    hintText: 'Enter phone number or email',
+                    prefixIcon: const Icon(Icons.person_outline),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.contacts),
+                      onPressed: () {
+                        // TODO: Show contacts picker
+                      },
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter recipient details';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: ThemeConstants.spacingL),
+
+                // Description Section
+                Text(
+                  'Description (Optional)',
+                  style: ThemeConstants.heading3.copyWith(
+                    color: ThemeConstants.textPrimaryColor,
+                  ),
+                ),
+                const SizedBox(height: ThemeConstants.spacingS),
+                TextFormField(
+                  controller: _descriptionController,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    hintText: 'Add a note about this transfer',
+                    alignLabelWithHint: true,
+                  ),
+                ),
+                const SizedBox(height: ThemeConstants.spacingXL),
+
+                // Transfer Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _handleTransfer,
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Text(
+                            'Send Money',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: ThemeConstants.spacingS),
-                        Text(
-                          TransferFunctions.formatCurrency(
-                              provider.currentBalance),
-                          style: ThemeConstants.heading1.copyWith(
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
-                  const SizedBox(height: ThemeConstants.spacingL),
+                ),
+                const SizedBox(height: ThemeConstants.spacingM),
 
-                  // Transfer Form
-                  AppTextField(
-                    controller: _phoneController,
-                    label: 'Recipient Phone Number',
-                    hint: '+265 XXXX XXXXX',
-                    prefixIcon: Icons.phone,
-                    keyboardType: TextInputType.phone,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter recipient phone number';
-                      }
-                      if (!TransferFunctions.isValidPhoneNumber(value)) {
-                        return 'Please enter a valid phone number';
-                      }
-                      return null;
-                    },
+                // Quick Amount Buttons
+                Text(
+                  'Quick Amount',
+                  style: ThemeConstants.heading3.copyWith(
+                    color: ThemeConstants.textPrimaryColor,
                   ),
-                  const SizedBox(height: ThemeConstants.spacingM),
-
-                  AppTextField(
-                    controller: _amountController,
-                    label: 'Amount',
-                    hint: '0.00',
-                    prefixIcon: Icons.attach_money,
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter amount';
-                      }
-                      final amount = double.tryParse(value);
-                      if (amount == null ||
-                          !TransferFunctions.isValidAmount(amount)) {
-                        return 'Please enter a valid amount';
-                      }
-                      if (amount > provider.currentBalance) {
-                        return 'Insufficient balance';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: ThemeConstants.spacingM),
-
-                  AppTextField(
-                    controller: _descriptionController,
-                    label: 'Description (Optional)',
-                    hint: 'Enter transfer description',
-                    prefixIcon: Icons.description,
-                    maxLines: 2,
-                  ),
-                  const SizedBox(height: ThemeConstants.spacingL),
-
-                  // Transfer Button
-                  AppButton(
-                    text: 'Transfer',
-                    onPressed: _handleTransfer,
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(height: ThemeConstants.spacingS),
+                Wrap(
+                  spacing: ThemeConstants.spacingS,
+                  runSpacing: ThemeConstants.spacingS,
+                  children: [
+                    _buildQuickAmountButton('1,000'),
+                    _buildQuickAmountButton('5,000'),
+                    _buildQuickAmountButton('10,000'),
+                    _buildQuickAmountButton('20,000'),
+                    _buildQuickAmountButton('50,000'),
+                    _buildQuickAmountButton('100,000'),
+                  ],
+                ),
+              ],
             ),
-          );
-        },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickAmountButton(String amount) {
+    return OutlinedButton(
+      onPressed: () {
+        _amountController.text = amount.replaceAll(',', '');
+      },
+      style: OutlinedButton.styleFrom(
+        side: const BorderSide(color: ThemeConstants.primaryColor),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusM),
+        ),
+      ),
+      child: Text(
+        'MK $amount',
+        style: const TextStyle(
+          color: ThemeConstants.primaryColor,
+        ),
       ),
     );
   }
