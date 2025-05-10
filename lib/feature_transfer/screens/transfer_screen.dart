@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:contacts_service/contacts_service.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../providers/transfer_provider.dart';
 import '../../../constants/theme_constants.dart';
 
@@ -24,6 +26,45 @@ class _TransferScreenState extends State<TransferScreen> {
     _recipientController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickContact() async {
+    try {
+      final status = await Permission.contacts.request();
+      if (status.isGranted) {
+        final Contact? contact = await ContactsService.openContacts();
+        if (contact != null && mounted) {
+          // Get the first phone number if available
+          final phoneNumber = contact.phones?.isNotEmpty == true
+              ? contact.phones!.first.value
+              : null;
+
+          if (phoneNumber != null) {
+            setState(() {
+              _recipientController.text = phoneNumber;
+            });
+          }
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Contacts permission is required to pick contacts'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error picking contact: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _handleTransfer() async {
@@ -93,15 +134,9 @@ class _TransferScreenState extends State<TransferScreen> {
                     FilteringTextInputFormatter.allow(
                         RegExp(r'^\d*\.?\d{0,2}')),
                   ],
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     prefixText: 'MK ',
                     hintText: '0.00',
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.attach_money),
-                      onPressed: () {
-                        // TODO: Show currency selector
-                      },
-                    ),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -127,18 +162,16 @@ class _TransferScreenState extends State<TransferScreen> {
                 TextFormField(
                   controller: _recipientController,
                   decoration: InputDecoration(
-                    hintText: 'Enter phone number or email',
+                    hintText: 'Enter phone number',
                     prefixIcon: const Icon(Icons.person_outline),
                     suffixIcon: IconButton(
                       icon: const Icon(Icons.contacts),
-                      onPressed: () {
-                        // TODO: Show contacts picker
-                      },
+                      onPressed: _pickContact,
                     ),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter recipient details';
+                      return 'Please enter recipient phone number';
                     }
                     return null;
                   },
