@@ -56,94 +56,71 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (context) => AuthProvider(
-            AuthService(
-              baseUrl: AppConstants.apiBaseUrl,
-              prefs: prefs,
-            ),
-          ),
+    return MaterialApp(
+      title: AppConstants.appName,
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primaryColor: ThemeConstants.primaryColor,
+        scaffoldBackgroundColor: ThemeConstants.backgroundColor,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: ThemeConstants.surfaceColor,
+          foregroundColor: ThemeConstants.textPrimaryColor,
+          elevation: 0,
+          centerTitle: true,
         ),
-        ChangeNotifierProvider(
-          create: (context) => DashboardProvider(
-            DashboardService(baseUrl: AppConstants.apiBaseUrl),
-          ),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => TransferProvider(
-            TransferService(baseUrl: AppConstants.apiBaseUrl),
-          ),
-        ),
-      ],
-      child: MaterialApp(
-        title: AppConstants.appName,
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          primaryColor: ThemeConstants.primaryColor,
-          scaffoldBackgroundColor: ThemeConstants.backgroundColor,
-          appBarTheme: const AppBarTheme(
-            backgroundColor: ThemeConstants.surfaceColor,
-            foregroundColor: ThemeConstants.textPrimaryColor,
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: ThemeConstants.primaryColor,
+            foregroundColor: Colors.white,
             elevation: 0,
-            centerTitle: true,
-          ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ThemeConstants.primaryColor,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius:
-                    BorderRadius.circular(ThemeConstants.borderRadiusM),
-              ),
-            ),
-          ),
-          inputDecorationTheme: InputDecorationTheme(
-            filled: true,
-            fillColor: ThemeConstants.surfaceColor,
-            border: OutlineInputBorder(
+            shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusM),
-              borderSide: const BorderSide(
-                color: ThemeConstants.textSecondaryColor,
-              ),
             ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusM),
-              borderSide: const BorderSide(
-                color: ThemeConstants.textSecondaryColor,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusM),
-              borderSide: const BorderSide(
-                color: ThemeConstants.primaryColor,
-              ),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusM),
-              borderSide: const BorderSide(
-                color: ThemeConstants.errorColor,
-              ),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusM),
-              borderSide: const BorderSide(
-                color: ThemeConstants.errorColor,
-              ),
-            ),
-          ),
-          pageTransitionsTheme: const PageTransitionsTheme(
-            builders: {
-              TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-              TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-            },
           ),
         ),
-        initialRoute: RouteConstants.welcome,
-        onGenerateRoute: AppRouter.generateRoute,
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: ThemeConstants.surfaceColor,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusM),
+            borderSide: const BorderSide(
+              color: ThemeConstants.textSecondaryColor,
+            ),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusM),
+            borderSide: const BorderSide(
+              color: ThemeConstants.textSecondaryColor,
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusM),
+            borderSide: const BorderSide(
+              color: ThemeConstants.primaryColor,
+            ),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusM),
+            borderSide: const BorderSide(
+              color: ThemeConstants.errorColor,
+            ),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(ThemeConstants.borderRadiusM),
+            borderSide: const BorderSide(
+              color: ThemeConstants.errorColor,
+            ),
+          ),
+        ),
+        pageTransitionsTheme: const PageTransitionsTheme(
+          builders: {
+            TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+            TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          },
+        ),
       ),
+      initialRoute: RouteConstants.welcome,
+      onGenerateRoute: AppRouter.generateRoute,
     );
   }
 }
