@@ -49,7 +49,7 @@ dependencies:
   qr_flutter: ^4.1.0
   package_info_plus: ^5.0.1
   image_cropper: ^5.0.1
-  contacts_service: ^0.6.3
+  flutter_contacts: ^1.1.7+1
 
 dev_dependencies:
   flutter_test:
