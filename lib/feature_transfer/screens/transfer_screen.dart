@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:contacts_service/contacts_service.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../providers/transfer_provider.dart';
 import '../../../constants/theme_constants.dart';
@@ -32,10 +32,13 @@ class _TransferScreenState extends State<TransferScreen> {
     try {
       final status = await Permission.contacts.request();
       if (status.isGranted) {
-        final contacts = await ContactsService.getContacts();
+        final contacts = await FlutterContacts.getContacts(
+          withProperties: true,
+          withPhoto: false,
+        );
         if (!mounted) return;
 
-        final Contact? contact = await showDialog<Contact>(
+        final contact = await showDialog<Contact>(
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('Select Contact'),
@@ -45,11 +48,11 @@ class _TransferScreenState extends State<TransferScreen> {
                 shrinkWrap: true,
                 itemCount: contacts.length,
                 itemBuilder: (context, index) {
-                  final contact = contacts.elementAt(index);
+                  final contact = contacts[index];
                   return ListTile(
-                    title: Text(contact.displayName ?? ''),
-                    subtitle: contact.phones?.isNotEmpty == true
-                        ? Text(contact.phones!.first.value ?? '')
+                    title: Text(contact.displayName),
+                    subtitle: contact.phones.isNotEmpty
+                        ? Text(contact.phones.first.number)
                         : null,
                     onTap: () => Navigator.pop(context, contact),
                   );
@@ -60,9 +63,8 @@ class _TransferScreenState extends State<TransferScreen> {
         );
 
         if (contact != null && mounted) {
-          final phoneNumber = contact.phones?.isNotEmpty == true
-              ? contact.phones!.first.value
-              : null;
+          final phoneNumber =
+              contact.phones.isNotEmpty ? contact.phones.first.number : null;
 
           if (phoneNumber != null) {
             setState(() {
