@@ -21,7 +21,7 @@ class _TransferScreenState extends State<TransferScreen> {
 
   final List<Map<String, dynamic>> _recentRecipients = [
     {'id': '1', 'name': 'John Doe', 'account': '0999123456'},
-    {'id': '2', 'name': 'Jane Smith', 'account': '0888123456'},
+    {'id': '2', 'name': 'Jane Smth', 'account': '0888123456'},
   ];
 
   @override
