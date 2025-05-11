@@ -34,7 +34,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
       'id': '3',
       'amount': 7500.0,
       'fromAccount': 'Airtel Money',
-      'toAccount': 'Mike Johnson',
+      'toAccount': 'Mike Bester',
       'date': DateTime.now().subtract(const Duration(days: 2)),
       'status': 'pending',
       'type': 'sent',
