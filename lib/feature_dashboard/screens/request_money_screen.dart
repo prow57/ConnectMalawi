@@ -37,7 +37,7 @@ class _RequestMoneyScreenState extends State<RequestMoneyScreen> {
       'type': 'TNM Mpamba',
     },
     {
-      'name': 'Mike Johnson',
+      'name': 'Mike Bester',
       'phone': 'Standard Bank - 1234567890',
       'type': 'Bank Account',
     },
