@@ -33,7 +33,7 @@ class _LoginScreenState extends State<LoginScreen>
     _checkBiometricAvailability();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 800),
     );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
@@ -42,7 +42,7 @@ class _LoginScreenState extends State<LoginScreen>
       ),
     );
     _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.1),
+      begin: const Offset(0, 0.2),
       end: Offset.zero,
     ).animate(
       CurvedAnimation(
@@ -106,286 +106,337 @@ class _LoginScreenState extends State<LoginScreen>
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Container(
-            height: size.height - MediaQuery.of(context).padding.top,
-            padding: const EdgeInsets.all(24.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 40),
-                  // Logo and App Name
-                  FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: SlideTransition(
-                      position: _slideAnimation,
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.send_rounded,
-                            size: 64,
-                            color: theme.primaryColor,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            AppConstants.appName,
-                            style: theme.textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: theme.primaryColor,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Welcome back!',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 40),
-                  // Toggle between phone and email
-                  FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: SlideTransition(
-                      position: _slideAnimation,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surfaceVariant,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              theme.primaryColor.withOpacity(0.1),
+              theme.primaryColor.withOpacity(0.05),
+              Colors.white,
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Container(
+              height: size.height - MediaQuery.of(context).padding.top,
+              padding: const EdgeInsets.all(24.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 40),
+                    // Logo and App Name
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: SlideTransition(
+                        position: _slideAnimation,
+                        child: Column(
                           children: [
-                            Expanded(
-                              child: ChoiceChip(
-                                label: const Text('Phone'),
-                                selected: _usePhone,
-                                onSelected: (selected) {
-                                  setState(() {
-                                    _usePhone = selected;
-                                  });
-                                },
-                                backgroundColor: Colors.transparent,
-                                selectedColor:
-                                    theme.primaryColor.withOpacity(0.2),
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: theme.primaryColor.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.send_rounded,
+                                size: 48,
+                                color: theme.primaryColor,
                               ),
                             ),
-                            Expanded(
-                              child: ChoiceChip(
-                                label: const Text('Email'),
-                                selected: !_usePhone,
-                                onSelected: (selected) {
-                                  setState(() {
-                                    _usePhone = !selected;
-                                  });
-                                },
-                                backgroundColor: Colors.transparent,
-                                selectedColor:
-                                    theme.primaryColor.withOpacity(0.2),
+                            const SizedBox(height: 24),
+                            Text(
+                              AppConstants.appName,
+                              style: theme.textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: theme.primaryColor,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Welcome back!',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                color: Colors.grey[600],
                               ),
                             ),
                           ],
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  // Phone/Email field
-                  FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: SlideTransition(
-                      position: _slideAnimation,
-                      child: TextFormField(
-                        controller:
-                            _usePhone ? _phoneController : _emailController,
-                        decoration: InputDecoration(
-                          labelText: _usePhone ? 'Phone Number' : 'Email',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          prefixIcon: Icon(
-                            _usePhone ? Icons.phone : Icons.email,
-                          ),
-                          prefixText: _usePhone ? '+265 ' : null,
-                        ),
-                        keyboardType: _usePhone
-                            ? TextInputType.phone
-                            : TextInputType.emailAddress,
-                        validator: _usePhone ? _validatePhone : _validateEmail,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // Password field
-                  FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: SlideTransition(
-                      position: _slideAnimation,
-                      child: TextFormField(
-                        controller: _passwordController,
-                        obscureText: _obscurePassword,
-                        decoration: InputDecoration(
-                          labelText: 'Password',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          prefixIcon: const Icon(Icons.lock),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePassword
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _obscurePassword = !_obscurePassword;
-                              });
-                            },
-                          ),
-                        ),
-                        validator: _validatePassword,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  // Forgot password link
-                  FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: SlideTransition(
-                      position: _slideAnimation,
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () {
-                            Navigator.pushNamed(context, '/forgot-password');
-                          },
-                          child: const Text('Forgot Password?'),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // Biometric option
-                  if (_useBiometric)
+                    const SizedBox(height: 40),
+                    // Form Container
                     FadeTransition(
                       opacity: _fadeAnimation,
                       child: SlideTransition(
                         position: _slideAnimation,
                         child: Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.surfaceVariant,
-                            borderRadius: BorderRadius.circular(12),
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
                           ),
-                          child: Row(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              const Icon(Icons.fingerprint),
-                              const SizedBox(width: 12),
-                              const Text('Use Biometric Authentication'),
-                              const Spacer(),
-                              Switch(
-                                value: _useBiometric,
-                                onChanged: (value) {
-                                  setState(() {
-                                    _useBiometric = value;
-                                  });
-                                },
+                              // Toggle between phone and email
+                              Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.surfaceVariant
+                                      .withOpacity(0.5),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: ChoiceChip(
+                                        label: const Text('Phone'),
+                                        selected: _usePhone,
+                                        onSelected: (selected) {
+                                          setState(() {
+                                            _usePhone = selected;
+                                          });
+                                        },
+                                        backgroundColor: Colors.transparent,
+                                        selectedColor:
+                                            theme.primaryColor.withOpacity(0.2),
+                                        labelStyle: TextStyle(
+                                          color: _usePhone
+                                              ? theme.primaryColor
+                                              : Colors.grey[600],
+                                          fontWeight: _usePhone
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: ChoiceChip(
+                                        label: const Text('Email'),
+                                        selected: !_usePhone,
+                                        onSelected: (selected) {
+                                          setState(() {
+                                            _usePhone = !selected;
+                                          });
+                                        },
+                                        backgroundColor: Colors.transparent,
+                                        selectedColor:
+                                            theme.primaryColor.withOpacity(0.2),
+                                        labelStyle: TextStyle(
+                                          color: !_usePhone
+                                              ? theme.primaryColor
+                                              : Colors.grey[600],
+                                          fontWeight: !_usePhone
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              // Phone/Email field
+                              TextFormField(
+                                controller: _usePhone
+                                    ? _phoneController
+                                    : _emailController,
+                                decoration: InputDecoration(
+                                  labelText:
+                                      _usePhone ? 'Phone Number' : 'Email',
+                                  hintText: _usePhone
+                                      ? 'Enter your phone number'
+                                      : 'Enter your email',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  filled: true,
+                                  fillColor: theme.colorScheme.surfaceVariant
+                                      .withOpacity(0.5),
+                                  prefixIcon: Icon(
+                                    _usePhone ? Icons.phone : Icons.email,
+                                    color: theme.primaryColor,
+                                  ),
+                                  prefixText: _usePhone ? '+265 ' : null,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 16),
+                                ),
+                                keyboardType: _usePhone
+                                    ? TextInputType.phone
+                                    : TextInputType.emailAddress,
+                                validator:
+                                    _usePhone ? _validatePhone : _validateEmail,
+                              ),
+                              const SizedBox(height: 16),
+                              // Password field
+                              TextFormField(
+                                controller: _passwordController,
+                                obscureText: _obscurePassword,
+                                decoration: InputDecoration(
+                                  labelText: 'Password',
+                                  hintText: 'Enter your password',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  filled: true,
+                                  fillColor: theme.colorScheme.surfaceVariant
+                                      .withOpacity(0.5),
+                                  prefixIcon: Icon(
+                                    Icons.lock,
+                                    color: theme.primaryColor,
+                                  ),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_off
+                                          : Icons.visibility,
+                                      color: theme.primaryColor,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscurePassword = !_obscurePassword;
+                                      });
+                                    },
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 16),
+                                ),
+                                validator: _validatePassword,
+                              ),
+                              const SizedBox(height: 8),
+                              // Forgot password link
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton(
+                                  onPressed: () {
+                                    Navigator.pushNamed(
+                                        context, '/forgot-password');
+                                  },
+                                  child: Text(
+                                    'Forgot Password?',
+                                    style: TextStyle(
+                                      color: theme.primaryColor,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              // Login button
+                              ElevatedButton(
+                                onPressed: _isLoading
+                                    ? null
+                                    : () async {
+                                        if (_formKey.currentState!.validate()) {
+                                          setState(() {
+                                            _isLoading = true;
+                                            _errorMessage = null;
+                                          });
+
+                                          try {
+                                            final authProvider =
+                                                context.read<AuthProvider>();
+                                            await _handleLogin();
+                                          } catch (e) {
+                                            if (mounted) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(e.toString()),
+                                                  backgroundColor: Colors.red,
+                                                ),
+                                              );
+                                            }
+                                          } finally {
+                                            if (mounted) {
+                                              setState(() {
+                                                _isLoading = false;
+                                              });
+                                            }
+                                          }
+                                        }
+                                      },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: theme.primaryColor,
+                                  foregroundColor: Colors.white,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  elevation: 0,
+                                ),
+                                child: _isLoading
+                                    ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                            Colors.white,
+                                          ),
+                                        ),
+                                      )
+                                    : const Text(
+                                        'Login',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                               ),
                             ],
                           ),
                         ),
                       ),
                     ),
-                  const SizedBox(height: 24),
-                  // Login button
-                  FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: SlideTransition(
-                      position: _slideAnimation,
-                      child: ElevatedButton(
-                        onPressed: _isLoading
-                            ? null
-                            : () async {
-                                if (_formKey.currentState!.validate()) {
-                                  setState(() {
-                                    _isLoading = true;
-                                    _errorMessage = null;
-                                  });
-
-                                  try {
-                                    final authProvider =
-                                        context.read<AuthProvider>();
-                                    await _handleLogin();
-                                  } catch (e) {
-                                    if (mounted) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                          content: Text(e.toString()),
-                                          backgroundColor: Colors.red,
-                                        ),
-                                      );
-                                    }
-                                  } finally {
-                                    if (mounted) {
-                                      setState(() {
-                                        _isLoading = false;
-                                      });
-                                    }
-                                  }
-                                }
-                              },
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: _isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
-                                  ),
-                                ),
-                              )
-                            : const Text(
-                                'Login',
-                                style: TextStyle(fontSize: 16),
+                    const Spacer(),
+                    // Register link
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: SlideTransition(
+                        position: _slideAnimation,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Don't have an account?",
+                              style: TextStyle(
+                                color: Colors.grey[600],
                               ),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/register');
+                              },
+                              child: Text(
+                                'Register',
+                                style: TextStyle(
+                                  color: theme.primaryColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  const Spacer(),
-                  // Register link
-                  FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: SlideTransition(
-                      position: _slideAnimation,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text("Don't have an account?"),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/register');
-                            },
-                            child: const Text('Register'),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
