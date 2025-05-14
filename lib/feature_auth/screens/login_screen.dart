@@ -112,8 +112,8 @@ class _LoginScreenState extends State<LoginScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              theme.primaryColor.withOpacity(0.1),
-              theme.primaryColor.withOpacity(0.05),
+              theme.primaryColor.withAlpha(26),
+              theme.primaryColor.withAlpha(13),
               Colors.white,
             ],
           ),
@@ -139,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen>
                             Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: theme.primaryColor.withOpacity(0.1),
+                                color: theme.primaryColor.withAlpha(26),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
@@ -180,7 +180,7 @@ class _LoginScreenState extends State<LoginScreen>
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
+                                color: Colors.black.withAlpha(13),
                                 blurRadius: 20,
                                 offset: const Offset(0, 10),
                               ),
@@ -194,7 +194,7 @@ class _LoginScreenState extends State<LoginScreen>
                                 padding: const EdgeInsets.all(4),
                                 decoration: BoxDecoration(
                                   color: theme.colorScheme.surfaceVariant
-                                      .withOpacity(0.5),
+                                      .withAlpha(128),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Row(
@@ -210,7 +210,7 @@ class _LoginScreenState extends State<LoginScreen>
                                         },
                                         backgroundColor: Colors.transparent,
                                         selectedColor:
-                                            theme.primaryColor.withOpacity(0.2),
+                                            theme.primaryColor.withAlpha(51),
                                         labelStyle: TextStyle(
                                           color: _usePhone
                                               ? theme.primaryColor
@@ -232,7 +232,7 @@ class _LoginScreenState extends State<LoginScreen>
                                         },
                                         backgroundColor: Colors.transparent,
                                         selectedColor:
-                                            theme.primaryColor.withOpacity(0.2),
+                                            theme.primaryColor.withAlpha(51),
                                         labelStyle: TextStyle(
                                           color: !_usePhone
                                               ? theme.primaryColor
@@ -264,7 +264,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   ),
                                   filled: true,
                                   fillColor: theme.colorScheme.surfaceVariant
-                                      .withOpacity(0.5),
+                                      .withAlpha(128),
                                   prefixIcon: Icon(
                                     _usePhone ? Icons.phone : Icons.email,
                                     color: theme.primaryColor,
@@ -293,7 +293,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   ),
                                   filled: true,
                                   fillColor: theme.colorScheme.surfaceVariant
-                                      .withOpacity(0.5),
+                                      .withAlpha(128),
                                   prefixIcon: Icon(
                                     Icons.lock,
                                     color: theme.primaryColor,
