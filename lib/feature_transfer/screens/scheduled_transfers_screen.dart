@@ -282,8 +282,8 @@ class _ScheduledTransfersScreenState extends State<ScheduledTransfersScreen>
                     ),
                     decoration: BoxDecoration(
                       color: isActive
-                          ? Colors.green.withOpacity(0.1)
-                          : Colors.orange.withOpacity(0.1),
+                          ? Colors.green.withAlpha(26)
+                          : Colors.orange.withAlpha(26),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -444,8 +444,8 @@ class _ScheduledTransfersScreenState extends State<ScheduledTransfersScreen>
                           ),
                           decoration: BoxDecoration(
                             color: transfer['status'] == 'active'
-                                ? Colors.green.withOpacity(0.1)
-                                : Colors.orange.withOpacity(0.1),
+                                ? Colors.green.withAlpha(26)
+                                : Colors.orange.withAlpha(26),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
