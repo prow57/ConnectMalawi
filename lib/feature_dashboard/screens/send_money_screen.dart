@@ -81,7 +81,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                     return 'Please enter a valid amount';
                   }
                   if (amount <= 0) {
-                    return 'Amount must be greater than 0';
+                    return 'Amount must be greater than 500';
                   }
                   return null;
                 },
