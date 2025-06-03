@@ -48,6 +48,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
       'type': 'received',
       'note': 'Project payment',
     },
+    {
+      'id': '3',
+      'amount': 10000.0,
+      'fromAccount': 'Immanuel Bester',
+      'toAccount': 'Airtel Money',
+      'date': DateTime.now().subtract(const Duration(days: 1)),
+      'status': 'completed',
+      'type': 'received',
+      'note': 'Project payment',
+    },
   ];
 
   @override
